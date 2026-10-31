@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #ffffff;
+  --text: #191c21;
+  --muted: #646a73;
+  --near-black: #1d1d1d;
+  --border: #e0e2e6;
+  --surface: #f3f4f6;
+  --accent: #2459a9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-source-serif), Georgia, "Times New Roman", serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tc-input,
+.tc-textarea,
+.tc-select {
+  width: 100%;
+  border-radius: 0.8rem;
+  border: 1px solid #ced3db;
+  background: #fff;
+  color: #191c21;
+  padding: 0.62rem 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.tc-input:focus-visible,
+.tc-textarea:focus-visible,
+.tc-select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(36, 89, 169, 0.2);
+}
+
+.typing-track {
+  display: inline-block;
+  width: 14ch;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid rgba(255, 255, 255, 0.9);
+  animation:
+    typing 2.2s steps(14, end) forwards,
+    blink 0.9s step-end infinite;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 14ch;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-right-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-track {
+    animation: none;
+    width: 14ch;
+    border-right: 0;
+  }
+
+  * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
