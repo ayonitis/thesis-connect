@@ -1,6 +1,8 @@
 # Thesis Connect
 ### A secure academic collaboration platform built for BRAC University students.
 
+NOTE: DEVELOPMENT STILL IN PROGRESS - ESTIMATED DAYS REQUIRED 2
+
 Thesis Connect is a full-stack academic collaboration platform designed to simplify the thesis journey for university students. It provides a structured environment where students can discover potential thesis partners, create collaboration rooms, manage applications, explore faculty profiles, and share feedback through a dedicated faculty review system.
 
 Built with **Next.js, TypeScript, Supabase, and PostgreSQL**, the platform goes beyond conventional frontend development, with particular emphasis on backend architecture, authentication, database-level authorization, and data protection.
