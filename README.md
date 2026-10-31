@@ -1,45 +1,28 @@
 # Thesis Connect
+### A secure academic collaboration platform built for BRAC University students.
 
-Thesis Connect is a BRAC University student platform for finding thesis partners, creating partner rooms, applying to rooms, exploring faculty, sharing faculty reviews, and submitting faculty-add requests.
+Thesis Connect is a full-stack academic collaboration platform designed to simplify the thesis journey for university students. It provides a structured environment where students can discover potential thesis partners, create collaboration rooms, manage applications, explore faculty profiles, and share feedback through a dedicated faculty review system.
 
-## Technology
+Built with **Next.js, TypeScript, Supabase, and PostgreSQL**, the platform goes beyond conventional frontend development, with particular emphasis on backend architecture, authentication, database-level authorization, and data protection.
 
-- Next.js 16, React 19, TypeScript, Tailwind CSS, ESLint, npm
-- Supabase Auth with `@supabase/ssr` and `@supabase/supabase-js`
-- PostgreSQL/Supabase migrations, Row-Level Security, views, triggers, and RPCs
-- Drizzle ORM/Kit and `pg`
+### Engineering & Security
 
-## Authentication and security
+Security has been a central consideration throughout the development of Thesis Connect. Rather than relying solely on frontend restrictions, the application incorporates database-level security mechanisms designed to enforce access boundaries where the data is stored.
 
-Supabase Auth handles sessions, email/password flows, verification, recovery, and Google OAuth integration points. The browser uses only the Supabase URL and publishable key; service-role credentials do not belong in browser code.
+Key engineering considerations include:
 
-The database source uses RLS, narrow public views, `auth.uid()`-based authorization, constraints, and authenticated SECURITY DEFINER RPCs with fixed search paths. Phase 4 moves faculty-review creation and faculty-add request submission to RPC-only write paths.
+- **Authentication & Identity Management:** Supabase Auth integration, Google OAuth, session management, and university-specific access restrictions.
+- **PostgreSQL Row-Level Security (RLS):** Database policies designed to control which users can access, create, or modify specific records.
+- **Role-Based Authorization:** Permission boundaries for students, administrators, and moderation workflows.
+- **Secure Database Operations:** Custom PostgreSQL RPC functions using `SECURITY DEFINER`, identity-aware validation, and restricted function execution permissions.
+- **Private Data Protection:** Separation of public-facing information from sensitive student records, application details, and contact information.
+- **Database Privilege Hardening:** Controlled direct-write permissions, removal of obsolete write paths, and explicit function `search_path` configuration.
+- **Security Auditing:** Structured, read-only database catalog inspection covering RLS policies, function configurations, ownership, privileges, views, triggers, constraints, sequences, and default permissions.
 
-```mermaid
-flowchart LR
-  Client[Next.js client] --> Auth[Supabase Auth]
-  Client --> Views[Public views]
-  Client --> RPC[Authenticated RPCs]
-  RPC --> DB[RLS, constraints, private tables]
-```
+### Development Approach
 
-See [SECURITY.md](SECURITY.md) and [database security architecture](docs/DATABASE_SECURITY_ARCHITECTURE.md).
+The project has involved more than implementing individual features. Its development has included database schema design, authentication architecture, backend workflow engineering, security reviews, migration planning, and documentation of database-level access controls.
 
-## Local setup
+Security work has been organized into dedicated development phases, including Phase 2B and Phase 4, with additional attention to function hardening and production-readiness verification.
 
-Copy `.env.example` to `.env.local`, set the listed variables, then run:
-
-```bash
-npm ci
-npm run dev
-npm run lint
-npm run typecheck
-npm run build
-```
-
-Required variables are `DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Configure OAuth secrets and redirect URLs in provider/Supabase settings, never in this repository.
-
-## Status
-
-Application and database-security work is present in source. This repository does **not** claim that Phase 2B/Phase 4 migrations are deployed or production-verified. Trusted ownership, administrator activation, deployment, and post-deployment catalog verification remain controlled future steps.
-
+**The objective is to build an application where functionality and security are considered together, rather than treating security as an afterthought.**
