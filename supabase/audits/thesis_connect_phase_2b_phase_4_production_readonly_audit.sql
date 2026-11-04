@@ -13,6 +13,7 @@ expected_functions(proname,args,return_type,path,client_callable) AS (VALUES
  ('withdraw_room_application','uuid','void','search_path=pg_catalog, public, pg_temp',true),
  ('decide_room_application','uuid,text,text','void','search_path=pg_catalog, public, pg_temp',true),
  ('update_own_faculty_review','uuid,smallint,smallint,smallint,smallint,text','void','search_path=pg_catalog, public, pg_temp',true),
+ ('delete_own_faculty_review','uuid','void','search_path=pg_catalog, public, pg_temp',true),
  ('decide_faculty_add_request','uuid,text,text','void','search_path=pg_catalog, public, pg_temp',true),
  ('moderate_faculty_review','uuid,text','void','search_path=pg_catalog, public, pg_temp',true),
  ('create_own_faculty_review','uuid,smallint,smallint,smallint,smallint,text','uuid','search_path=pg_catalog, public, pg_temp',true),

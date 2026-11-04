@@ -1,5 +1,7 @@
 "use client";
 
+import { BRAC_ACCESS_MESSAGE, BRAC_EMAIL_MESSAGE, validateBracEmail } from "@/lib/auth/email-policy";
+import { requireBracUser, clearRejectedBracSession } from "@/lib/auth/require-brac-user";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -10,13 +12,10 @@ import { Button, LinkButton } from "@/components/ui/button";
 import { getSafeInternalRedirectPath } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/client";
 
-function prettyReason(reason: string | null) {
-  if (!reason) return null;
-  return reason.replace(/_/g, " ").trim();
-}
-
 function queryErrorMessage(error: string | null, reason: string | null) {
   if (!error) return null;
+  if (error === "brac_access_required") return BRAC_ACCESS_MESSAGE;
+  if (error === "session_cleanup_failed") return "Sign out of this session, then try signing in again.";
 
   if (error === "oauth_cancelled_or_failed") {
     if (reason === "access_denied") {
@@ -27,19 +26,10 @@ function queryErrorMessage(error: string | null, reason: string | null) {
       return "Google sign-in failed due to a provider configuration or server issue. Please verify OAuth setup.";
     }
 
-    const readableReason = prettyReason(reason);
-    if (readableReason && process.env.NODE_ENV !== "production") {
-      return `Google sign-in failed: ${readableReason}.`;
-    }
-
     return "Google sign-in was cancelled or failed. Please try again.";
   }
 
   if (error === "auth_callback_failed") {
-    const readableReason = prettyReason(reason);
-    if (readableReason && process.env.NODE_ENV !== "production") {
-      return `Authentication callback failed: ${readableReason}.`;
-    }
 
     return "Authentication callback failed. Please sign in again.";
   }
@@ -60,12 +50,14 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const search = new URLSearchParams(window.location.search);
-    const rawNext = search.get("next");
-
-    setNextPath(getSafeInternalRedirectPath(rawNext, "/"));
-    setQueryError(search.get("error"));
-    setQueryReason(search.get("reason"));
+    const syncSearch = () => {
+      const search = new URLSearchParams(window.location.search);
+      setNextPath(getSafeInternalRedirectPath(search.get("next"), "/"));
+      setQueryError(search.get("error"));
+      setQueryReason(search.get("reason"));
+    };
+    const initialSync = window.setTimeout(syncSearch, 0);
+    window.addEventListener("popstate", syncSearch);
 
     const run = async () => {
       try {
@@ -81,13 +73,18 @@ export default function SignInPage() {
     };
 
     void run();
+    return () => {
+      window.clearTimeout(initialSync);
+      window.removeEventListener("popstate", syncSearch);
+    };
   }, []);
 
   const handleEmailSignIn = async () => {
     setError(null);
 
-    if (!email.trim()) {
-      setError("Email is required.");
+    const emailResult = validateBracEmail(email, true);
+    if (!emailResult.ok) {
+      setError(BRAC_EMAIL_MESSAGE);
       return;
     }
 
@@ -101,7 +98,7 @@ export default function SignInPage() {
     try {
       const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: emailResult.email,
         password,
       });
 
@@ -109,11 +106,17 @@ export default function SignInPage() {
         if (signInError.message.toLowerCase().includes("email not confirmed")) {
           setError("Please verify your email before signing in.");
         } else {
-          setError(signInError.message);
+          setError("Unable to sign in. Check your credentials and try again.");
         }
         return;
       }
 
+      try { await requireBracUser(supabase); }
+      catch {
+        await clearRejectedBracSession(supabase);
+        setError(BRAC_ACCESS_MESSAGE);
+        return;
+      }
       router.push(nextPath);
       router.refresh();
     } catch {
@@ -136,7 +139,7 @@ export default function SignInPage() {
       });
 
       if (oauthError) {
-        setError(oauthError.message);
+        setError("Google sign-in could not be started. Please try again.");
       }
     } catch {
       setError("Google sign-in could not be started. Check Supabase and Google OAuth configuration.");

@@ -1,0 +1,21 @@
+{
+  "python_version": "3.14.5",
+  "node_dependencies": [],
+  "artifacts": {
+    "vendor/sql-split.ts": "005c59d49c164c72e60bbc9ab96b18bc7b811173b1702ded2e6bedabd2c688c0",
+    "python-files.lock.json": "aad258d1603ab4387439f3e4e03fe347ead40419b0cae188a5e68156fcef6739",
+    "requirements.txt": "4f9a1ea6da8c1654c41cabbaae8f20c9ae0c0e63b31c622a669f739e9626fc2f",
+    "requirements.lock": "7466c9369a41665d93b1464ddad342a422016209c2cd3efbf97c42e2be38ffa8",
+    "parse.mjs": "e36a2267828b4174d1d45c0ea2c320a50b2c2e804630a387fa8a0f06ea755a45"
+  },
+  "node": {
+    "version": "v24.16.0",
+    "sha256": "b3094d0b49f9ad602262a9921551737bb97637c05dd357a06ae98188d7290aa3",
+    "path": "C:/Program Files/nodejs/node.exe"
+  },
+  "python_packages": {
+    "tzdata": "2026.6",
+    "psycopg": "3.3.3",
+    "psycopg-binary": "3.3.3"
+  }
+}

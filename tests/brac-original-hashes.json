@@ -1,0 +1,10 @@
+{
+  "20261028190000_phase_2b_schema.sql": "6a2f52f92b6c0096fff296ffcdd5a53f3c751f6f30894fec330429bf3105bcb2",
+  "20261028190100_phase_2b_rls_and_views.sql": "612d0c941e5a8d2ad55cb5147d6ca21eee40887ad6846d9b7f4cfa154c593b26",
+  "20261028190200_phase_2b_secure_rpcs.sql": "ffbddac0b61c5b57e5bb4e6874ef8447d4e441a76029b3a73ae80c880d73c7bd",
+  "20261031120000_phase_4_2a_create_own_faculty_review.sql": "44518b55412fe2fd314bce0993ee071760966d169be8af47c8a8be7da3e76cf6",
+  "20261031121000_phase_4_2b_faculty_review_rpc_only.sql": "faade9be3bfe4bcce5f1d76a65376a5fc4dfe9259b5273233b13d47dcca4a89f",
+  "20261031122000_phase_4_3_submit_faculty_add_request.sql": "015285592772252af37da5b25a4df63d3e727d445019662a47dfb0b9b51979ea",
+  "20261031123000_phase_4_4_harden_phase_2b_rpc_search_paths.sql": "20304eac85c6d743431af275750660051fdd883213a869c222dfdb681f0bb182",
+  "20261101130000_phase_4_5_delete_own_faculty_review.sql": "7665417e1287a57951d86ebe31640974fff26df8951a8e723c929bac479d3d23"
+}

@@ -1,3 +1,5 @@
+import { throwSafeDataError } from "./safe-errors";
+import { requireBracUser } from "@/lib/auth/require-brac-user";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { DepartmentValue } from "@/lib/departments";
@@ -86,13 +88,11 @@ export type ModerationLogEntry = {
 };
 
 async function requireAuthenticatedUser(supabase: SupabaseClient) {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) throw new Error("You must be signed in to continue.");
-  return user;
+  return requireBracUser(supabase);
 }
 
-function throwIfError(error: { message: string } | null) {
-  if (error) throw new Error(error.message);
+function throwIfError(error: { message: string; code?: string } | null) {
+  if (error) throwSafeDataError(error);
 }
 
 const FACULTY_COLUMNS =
@@ -101,17 +101,9 @@ const FACULTY_COLUMNS =
 const REVIEW_COLUMNS =
   "faculty_id, author_label, clarity, responsiveness, fairness, workload, description";
 
-async function canCurrentUserViewReviews(
-  supabase: SupabaseClient,
-): Promise<boolean> {
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  // Fail closed: never query the protected reviews view if auth
-  // cannot establish a signed-in user.
-  return !error && Boolean(user);
+async function canCurrentUserViewReviews(supabase: SupabaseClient): Promise<boolean> {
+  try { await requireBracUser(supabase); return true; }
+  catch { return false; }
 }
 
 async function getPublishedReviews(
@@ -128,7 +120,7 @@ async function getPublishedReviews(
     .in("faculty_id", facultyIds);
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return (data ?? []) as FacultyReviewPublic[];
@@ -161,7 +153,7 @@ export async function getFacultyDirectory(
     .order("name", { ascending: true });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   const faculty = (data ?? []) as FacultyPublic[];
@@ -191,7 +183,7 @@ export async function getFacultyBySlug(
     .maybeSingle();
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   if (!data) {
@@ -251,6 +243,7 @@ export async function getOwnFacultyReviews(
 }
 
 export async function createOwnFacultyReview(supabase: SupabaseClient, input: ReviewInput): Promise<string> {
+  await requireBracUser(supabase);
   const { data, error } = await supabase.rpc("create_own_faculty_review", {
     p_faculty_id: input.facultyId, p_clarity: input.clarity, p_responsiveness: input.responsiveness,
     p_fairness: input.fairness, p_workload: input.workload, p_description: input.description,
@@ -261,6 +254,7 @@ export async function createOwnFacultyReview(supabase: SupabaseClient, input: Re
 }
 
 export async function updateOwnFacultyReview(supabase: SupabaseClient, reviewId: string, input: Omit<ReviewInput, "facultyId">): Promise<void> {
+  await requireBracUser(supabase);
   const { error } = await supabase.rpc("update_own_faculty_review", {
     p_review_id: reviewId, p_clarity: input.clarity, p_responsiveness: input.responsiveness,
     p_fairness: input.fairness, p_workload: input.workload, p_description: input.description,
@@ -268,7 +262,14 @@ export async function updateOwnFacultyReview(supabase: SupabaseClient, reviewId:
   throwIfError(error);
 }
 
+export async function deleteOwnFacultyReview(supabase: SupabaseClient, reviewId: string): Promise<void> {
+  await requireBracUser(supabase);
+  const { error } = await supabase.rpc("delete_own_faculty_review", { p_review_id: reviewId });
+  throwIfError(error);
+}
+
 export async function submitFacultyAddRequest(supabase: SupabaseClient, input: FacultyAddRequestInput): Promise<string> {
+  await requireBracUser(supabase);
   const { data, error } = await supabase.rpc("submit_faculty_add_request", {
     p_proposed_name: input.proposedName, p_proposed_department: input.proposedDepartment,
     p_proposed_research_interests: input.proposedResearchInterests, p_rationale: input.rationale,
@@ -294,12 +295,14 @@ export async function getOwnFacultyAddRequests(supabase: SupabaseClient): Promis
 }
 
 export async function isCurrentUserAdmin(supabase: SupabaseClient): Promise<boolean> {
+  await requireBracUser(supabase);
   const { data, error } = await supabase.rpc("is_admin");
   throwIfError(error);
   return data === true;
 }
 
 export async function getAdminFacultyData(supabase: SupabaseClient) {
+  await requireBracUser(supabase);
   if (!(await isCurrentUserAdmin(supabase))) throw new Error("Administrator access is required.");
   const [requests, reviews, faculty, logs] = await Promise.all([
     supabase.from("faculty_add_requests").select("id, requester_user_id, proposed_name, proposed_department, proposed_research_interests, rationale, status, decision_note, created_at, decided_at").order("created_at", { ascending: false }),
@@ -324,11 +327,13 @@ export async function getAdminFacultyData(supabase: SupabaseClient) {
 }
 
 export async function decideFacultyAddRequest(supabase: SupabaseClient, requestId: string, decision: "approved" | "rejected", note: string): Promise<void> {
+  await requireBracUser(supabase);
   const { error } = await supabase.rpc("decide_faculty_add_request", { p_request_id: requestId, p_decision: decision, p_decision_note: note || null });
   throwIfError(error);
 }
 
 export async function moderateFacultyReview(supabase: SupabaseClient, reviewId: string, visibility: "published" | "hidden"): Promise<void> {
+  await requireBracUser(supabase);
   const { error } = await supabase.rpc("moderate_faculty_review", { p_review_id: reviewId, p_visibility: visibility });
   throwIfError(error);
 }

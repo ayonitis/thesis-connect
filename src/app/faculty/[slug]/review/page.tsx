@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Footer } from "@/components/layout/footer";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { createOwnFacultyReview, getFacultyBySlug, getOwnFacultyReviews, updateOwnFacultyReview, type FacultyWithReviews } from "@/lib/data/faculty";
+import { createOwnFacultyReview, deleteOwnFacultyReview, getFacultyBySlug, getOwnFacultyReviews, updateOwnFacultyReview, type FacultyWithReviews } from "@/lib/data/faculty";
 import { createClient } from "@/lib/supabase/client";
 import { ratingTone } from "@/lib/review-utils";
 
@@ -14,7 +14,10 @@ type RatingField = "clarity" | "responsiveness" | "fairness" | "workload";
 
 export default function PostReviewPage() {
   const params = useParams<{ slug: string }>();
-  const slug = params.slug;
+  return <FacultyReviewForm key={params.slug} slug={params.slug} />;
+}
+
+function FacultyReviewForm({ slug }: { slug: string }) {
   const router = useRouter();
 
   const [faculty, setFaculty] = useState<FacultyWithReviews | null>(null);
@@ -98,6 +101,22 @@ export default function PostReviewPage() {
     } finally { setSaving(false); }
   };
 
+  const deleteReview = async () => {
+    if (!reviewId || saving) return;
+    if (!window.confirm("Delete your review? This cannot be undone.")) return;
+    setSaving(true); setSaveError(""); setNotice("");
+    try {
+      await deleteOwnFacultyReview(createClient(), reviewId);
+      setReviewId(null);
+      setRatings({ clarity: null, responsiveness: null, fairness: null, workload: null });
+      setDescription("");
+      setNotice("Your review was deleted.");
+      router.refresh();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Unable to delete your review. Please try again.");
+    } finally { setSaving(false); }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
@@ -135,7 +154,7 @@ export default function PostReviewPage() {
         <PageHeader
           fallbackHref={`/faculty/${slug}`}
           title={reviewId ? "Edit Your Review" : "Post a Review"}
-          description="Share respectful feedback. The database remains authoritative for validation and visibility."
+          description="Share respectful feedback without including personal information."
         />
         {notice ? <p role="status" className="mb-5 rounded-xl border border-[#BFD9C1] bg-[#EFFAF0] p-4 text-sm text-[#204D25]">{notice}</p> : null}
         {saveError ? <p role="alert" className="mb-5 rounded-xl border border-[#F2C5C2] bg-[#FFF4F3] p-4 text-sm text-[#B42318]">{saveError}</p> : null}
@@ -217,7 +236,8 @@ export default function PostReviewPage() {
             </label>
           </div>
 
-          <div className="mt-5 flex justify-end">
+          <div className="mt-5 flex justify-end gap-3">
+            {reviewId ? <Button type="button" variant="secondary" disabled={saving} onClick={deleteReview}>Delete My Review</Button> : null}
             <Button type="submit" disabled={saving}>
               {saving ? "Saving…" : reviewId ? "Save Changes" : "Submit Review"}
             </Button>

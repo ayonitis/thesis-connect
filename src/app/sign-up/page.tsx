@@ -1,5 +1,7 @@
 "use client";
 
+import { BRAC_EMAIL_MESSAGE, validateBracEmail } from "@/lib/auth/email-policy";
+
 import Link from "next/link";
 import { useState } from "react";
 import { AuthStatus } from "@/components/auth/auth-status";
@@ -25,8 +27,9 @@ export default function SignUpPage() {
       return;
     }
 
-    if (!email.trim()) {
-      setError("Email is required.");
+    const emailResult = validateBracEmail(email, true);
+    if (!emailResult.ok) {
+      setError(BRAC_EMAIL_MESSAGE);
       return;
     }
 
@@ -41,7 +44,7 @@ export default function SignUpPage() {
       const supabase = createClient();
       const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent("/verify-email?status=verified")}`;
       const { error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: emailResult.email,
         password,
         options: {
           emailRedirectTo,
@@ -53,7 +56,7 @@ export default function SignUpPage() {
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        setError("Registration could not be completed. Check your university email and try again.");
         return;
       }
 

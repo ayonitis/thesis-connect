@@ -1,3 +1,4 @@
+import { getSafeInternalRedirectPath } from "@/lib/auth/redirect";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
@@ -8,9 +9,8 @@ function isProtectedPath(pathname: string) {
   if (
     pathname === "/partners/create" ||
     pathname === "/partners/my-rooms" ||
-    pathname.startsWith("/admin/") ||
-    pathname === "/faculty/post-review" ||
-    pathname === "/sign-out"
+    (pathname === "/admin" || pathname.startsWith("/admin/")) ||
+    pathname === "/faculty/post-review"
   ) {
     return true;
   }
@@ -27,7 +27,7 @@ function isProtectedPath(pathname: string) {
 }
 
 function requiresCompletedProfile(pathname: string) {
-  if (pathname === "/partners/create" || pathname === "/partners/my-rooms" || pathname === "/faculty/post-review" || pathname.startsWith("/admin/")) {
+  if (pathname === "/partners/create" || pathname === "/partners/my-rooms" || pathname === "/faculty/post-review" || (pathname === "/admin" || pathname.startsWith("/admin/"))) {
     return true;
   }
 
@@ -37,12 +37,7 @@ function requiresCompletedProfile(pathname: string) {
   );
 }
 
-function safeInternalNext(nextValue: string | null) {
-  if (!nextValue) return "/";
-  if (!nextValue.startsWith("/")) return "/";
-  if (nextValue.startsWith("//")) return "/";
-  return nextValue;
-}
+const safeInternalNext = getSafeInternalRedirectPath;
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -51,28 +46,40 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const { response, user, profileStatus } = await updateSession(request);
+  // Sign-out is an explicit recovery action, not protected application data.
+  // Already signed-out, unverified and ineligible users all reach its confirmation UI.
+  if (pathname === "/sign-out") return NextResponse.next();
+  const { response, user, eligible, profileStatus } = await updateSession(request);
+  const redirectWithCookies = (destination: URL) => {
+    const redirected = NextResponse.redirect(destination);
+    response.cookies.getAll().forEach((cookie) => redirected.cookies.set(cookie));
+    for (const name of ["Cache-Control", "Expires", "Pragma"]) {
+      const value = response.headers.get(name);
+      if (value !== null) redirected.headers.set(name, value);
+    }
+    return redirected;
+  };
 
-  if (!user && (isProtectedPath(pathname) || pathname === "/profile/complete")) {
+  if ((!user || !eligible) && (isProtectedPath(pathname) || pathname === "/profile/complete")) {
     const signInUrl = new URL("/sign-in", request.url);
     signInUrl.searchParams.set("next", `${pathname}${search}`);
-    return NextResponse.redirect(signInUrl);
+    return redirectWithCookies(signInUrl);
   }
 
-  if (user && AUTH_PAGES.has(pathname)) {
+  if (user && eligible && AUTH_PAGES.has(pathname)) {
     const nextParam = safeInternalNext(request.nextUrl.searchParams.get("next"));
-    return NextResponse.redirect(new URL(nextParam, request.url));
+    return redirectWithCookies(new URL(nextParam, request.url));
   }
 
-  if (user && pathname === "/profile/complete" && profileStatus === "complete") {
+  if (user && eligible && pathname === "/profile/complete" && profileStatus === "complete") {
     const nextPath = safeInternalNext(request.nextUrl.searchParams.get("next"));
-    return NextResponse.redirect(new URL(nextPath, request.url));
+    return redirectWithCookies(new URL(nextPath, request.url));
   }
 
-  if (user && requiresCompletedProfile(pathname) && profileStatus === "incomplete") {
+  if (user && eligible && requiresCompletedProfile(pathname) && profileStatus !== "complete") {
     const completeProfileUrl = new URL("/profile/complete", request.url);
     completeProfileUrl.searchParams.set("next", `${pathname}${search}`);
-    return NextResponse.redirect(completeProfileUrl);
+    return redirectWithCookies(completeProfileUrl);
   }
 
   return response;

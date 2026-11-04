@@ -1,3 +1,5 @@
+import { throwSafeDataError } from "./safe-errors";
+import { requireBracUser } from "@/lib/auth/require-brac-user";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { DepartmentValue } from "@/lib/departments";
 
@@ -167,7 +169,7 @@ export async function listPublicPartnerRooms(
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return (data ?? []).map((row) =>
@@ -192,7 +194,7 @@ export async function getPublicPartnerRoomById(
     .maybeSingle();
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return data ? toPublicPartnerRoom(data as PartnerRoomPublicRow) : null;
@@ -206,6 +208,7 @@ export async function createPartnerRoom(
   supabase: SupabaseClient,
   input: CreatePartnerRoomInput,
 ): Promise<string> {
+  await requireBracUser(supabase);
   const { data, error } = await supabase.rpc("create_partner_room", {
     p_title: input.title,
     p_description: input.description,
@@ -221,7 +224,7 @@ export async function createPartnerRoom(
   });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   if (typeof data !== "string" || !data) {
@@ -236,6 +239,7 @@ export async function submitRoomApplication(
   supabase: SupabaseClient,
   input: SubmitRoomApplicationInput,
 ): Promise<string> {
+  await requireBracUser(supabase);
   const { data, error } = await supabase.rpc("submit_room_application", {
     p_room_id: input.roomId,
     p_department: input.department,
@@ -246,7 +250,7 @@ export async function submitRoomApplication(
   });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   if (typeof data !== "string" || !data) {
@@ -264,12 +268,13 @@ export async function withdrawRoomApplication(
   supabase: SupabaseClient,
   applicationId: string,
 ): Promise<void> {
+  await requireBracUser(supabase);
   const { error } = await supabase.rpc("withdraw_room_application", {
     p_application_id: applicationId,
   });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 }
 
@@ -301,18 +306,7 @@ type PublicRoomTitleRow = {
 export async function listOwnRoomApplications(
   supabase: SupabaseClient,
 ): Promise<OwnRoomApplication[]> {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError) {
-    throw new Error(userError.message);
-  }
-
-  if (!user) {
-    throw new Error("Authentication is required to view your applications.");
-  }
+  const user = await requireBracUser(supabase);
 
   const { data, error } = await supabase
     .from("room_join_applications")
@@ -321,7 +315,7 @@ export async function listOwnRoomApplications(
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   const applications = (data ?? []).map((row) =>
@@ -337,7 +331,7 @@ export async function listOwnRoomApplications(
       .in("id", roomIds);
 
     if (roomsError) {
-      throw new Error(roomsError.message);
+      throwSafeDataError(roomsError);
     }
 
     for (const room of rooms ?? []) {
@@ -396,13 +390,14 @@ type AcceptedRoomMembershipRow = {
 export async function listHostedPartnerRooms(
   supabase: SupabaseClient,
 ): Promise<HostedPartnerRoom[]> {
+  await requireBracUser(supabase);
   const { data, error } = await supabase
     .from("partner_rooms")
     .select(HOSTED_ROOM_COLUMNS)
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return (data ?? []).map((row) => toHostedPartnerRoom(row as HostedPartnerRoomRow));
@@ -412,6 +407,7 @@ export async function listHostedRoomApplications(
   supabase: SupabaseClient,
   roomId: string,
 ): Promise<HostedRoomApplication[]> {
+  await requireBracUser(supabase);
   const normalizedRoomId = roomId.trim();
   if (!normalizedRoomId) {
     throw new Error("A room ID is required to list applications.");
@@ -424,7 +420,7 @@ export async function listHostedRoomApplications(
     .order("created_at", { ascending: true });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return (data ?? []).map((row) => toHostedRoomApplication(row as HostedRoomApplicationRow));
@@ -434,6 +430,7 @@ export async function listAcceptedRoomMemberships(
   supabase: SupabaseClient,
   roomId: string,
 ): Promise<AcceptedRoomMembership[]> {
+  await requireBracUser(supabase);
   const normalizedRoomId = roomId.trim();
   if (!normalizedRoomId) {
     throw new Error("A room ID is required to list memberships.");
@@ -447,7 +444,7 @@ export async function listAcceptedRoomMemberships(
     .order("created_at", { ascending: true });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return (data ?? []).map((row) =>
@@ -458,6 +455,7 @@ export async function listAcceptedRoomMemberships(
 export async function listHostedRoomDashboards(
   supabase: SupabaseClient,
 ): Promise<HostedRoomDashboard[]> {
+  await requireBracUser(supabase);
   const rooms = await listHostedPartnerRooms(supabase);
 
   return Promise.all(
@@ -500,6 +498,7 @@ export async function decideRoomApplication(
   applicationId: string,
   decision: RoomApplicationDecision,
 ): Promise<void> {
+  await requireBracUser(supabase);
   const { error } = await supabase.rpc("decide_room_application", {
     p_application_id: applicationId,
     p_decision: decision,
@@ -507,7 +506,7 @@ export async function decideRoomApplication(
   });
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 }
 

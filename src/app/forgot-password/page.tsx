@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
       });
 
       if (resetError) {
-        setError(resetError.message);
+        setError("Unable to send recovery instructions. Please wait and try again.");
         return;
       }
 

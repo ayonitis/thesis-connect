@@ -52,7 +52,7 @@ export default function VerifyEmailPage() {
       });
 
       if (error) {
-        setResendError(error.message);
+        setResendError("Unable to resend confirmation. Please wait and try again.");
         return;
       }
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Footer } from "@/components/layout/footer";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button, LinkButton } from "@/components/ui/button";
+import { clearRejectedBracSession } from "@/lib/auth/require-brac-user";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignOutPage() {
@@ -19,14 +20,14 @@ export default function SignOutPage() {
 
     try {
       const supabase = createClient();
-      const { error: signOutError } = await supabase.auth.signOut();
-
-      if (signOutError) {
-        setError(signOutError.message);
+      const cleared = await clearRejectedBracSession(supabase);
+      if (!cleared) {
+        setError("Unable to clear this session. Please try signing out again.");
         return;
       }
 
       setDone(true);
+      router.replace("/sign-in");
       router.refresh();
     } catch {
       setError("Unable to sign out right now. Please try again.");

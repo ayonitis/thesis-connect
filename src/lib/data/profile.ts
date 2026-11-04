@@ -1,3 +1,5 @@
+import { throwSafeDataError } from "./safe-errors";
+import { requireBracUser } from "@/lib/auth/require-brac-user";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { DepartmentValue } from "@/lib/departments";
 
@@ -52,16 +54,7 @@ function toStudentPrivate(row: {
 }
 
 async function getCurrentUserId(supabase: SupabaseClient): Promise<string> {
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    throw new Error("Authentication is required.");
-  }
-
-  return user.id;
+  return (await requireBracUser(supabase)).id;
 }
 
 export async function getCurrentProfile(supabase: SupabaseClient): Promise<Profile | null> {
@@ -73,7 +66,7 @@ export async function getCurrentProfile(supabase: SupabaseClient): Promise<Profi
     .maybeSingle();
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return data ? toProfile(data as Parameters<typeof toProfile>[0]) : null;
@@ -107,17 +100,19 @@ export async function updateCurrentProfile(supabase: SupabaseClient, update: Pro
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return toProfile(data as Parameters<typeof toProfile>[0]);
 }
 
 export async function updateCurrentDisplayName(supabase: SupabaseClient, displayName: string): Promise<Profile> {
+  await requireBracUser(supabase);
   return updateCurrentProfile(supabase, { displayName });
 }
 
 export async function updateCurrentDepartment(supabase: SupabaseClient, department: DepartmentValue): Promise<Profile> {
+  await requireBracUser(supabase);
   return updateCurrentProfile(supabase, { department });
 }
 
@@ -130,7 +125,7 @@ export async function getCurrentStudentPrivate(supabase: SupabaseClient): Promis
     .maybeSingle();
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return data ? toStudentPrivate(data as Parameters<typeof toStudentPrivate>[0]) : null;
@@ -151,7 +146,7 @@ export async function updateCurrentStudentPrivate(supabase: SupabaseClient, stud
   const { data, error } = await query.select("user_id, student_id, created_at, updated_at").single();
 
   if (error) {
-    throw new Error(error.message);
+    throwSafeDataError(error);
   }
 
   return toStudentPrivate(data as Parameters<typeof toStudentPrivate>[0]);
