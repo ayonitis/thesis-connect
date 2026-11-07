@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import Link from "next/link";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "lightBlue";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "lightBlue" | "auth" | "profile";
 
 type CommonProps = {
   variant?: ButtonVariant;
@@ -17,7 +17,11 @@ type LinkButtonProps = CommonProps & {
 
 const variantClass: Record<ButtonVariant, string> = {
   primary:
-    "bg-[#2459A9] text-white border-[#2459A9] hover:bg-[#1E4B8F] active:bg-[#1A417D] focus-visible:ring-[#2459A9]",
+    "bg-[#A9D8F7] text-[#191C21] border-[#8DC8EE] hover:bg-[#95CDED] active:bg-[#84C1E6] focus-visible:ring-[#2459A9]",
+  auth:
+    "bg-black text-white border-black hover:bg-[#242424] active:bg-[#333333] focus-visible:ring-black",
+  profile:
+    "bg-[#FFFFFF] text-[#000000] border-[#D1D5DB] hover:bg-[#F3F4F6] active:bg-[#E5E7EB] focus-visible:ring-[#2459A9]",
   secondary:
     "bg-white text-[#191C21] border-[#C6CBD3] hover:bg-[#F8F9FB] active:bg-[#EEF1F5] focus-visible:ring-[#2459A9]",
   ghost:

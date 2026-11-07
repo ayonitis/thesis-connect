@@ -1,13 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Footer } from "@/components/layout/footer";
-import { LinkButton } from "@/components/ui/button";
+import { AuthNavigation } from "@/components/auth/auth-navigation";
 
 export const dynamic = "force-dynamic";
 
 function LogoMark() {
   return (
-    <div aria-hidden="true" className="grid h-12 w-12 place-items-center rounded-xl border border-white/35 bg-white/10 text-white">
+    <div aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center sm:h-12 sm:w-12 rounded-xl border border-white/35 bg-white/10 text-white">
       <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.6">
         <path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5Z" />
         <path d="M6 10.5V16c0 1.2 2.6 2.5 6 2.5s6-1.3 6-2.5v-5.5" />
@@ -23,23 +23,19 @@ function HomePanel({
   href,
   action,
   icon,
-  tone = "blue",
 }: {
   title: string;
   description: string;
   href: string;
   action: string;
   icon: ReactNode;
-  tone?: "blue" | "neutral";
 }) {
   return (
     <Link
       href={href}
-      className={`group relative flex min-h-[220px] flex-col justify-between rounded-3xl border p-6 transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(25,28,33,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2459A9] focus-visible:ring-offset-4 ${
-        tone === "blue" ? "border-[#193654] bg-[#EAF4FF]" : "border-[#D9DDE4] bg-[#F6F7F9]"
-      }`}
+      className="group relative flex min-h-[220px] flex-col justify-between rounded-3xl border border-[#D9DDE4] bg-[#F6F7F9] p-6 transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(25,28,33,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2459A9] focus-visible:ring-offset-4"
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold leading-tight text-[#191C21]">{title}</h2>
           <p className="mt-3 max-w-[46ch] text-sm text-[#48505C]">{description}</p>
@@ -58,16 +54,14 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#FFFFFF]">
       <main className="mx-auto w-full max-w-6xl px-4 pb-8 pt-6 sm:px-6 lg:px-8 lg:pt-8">
         <section className="rounded-[34px] bg-[#1D1D1D] p-6 text-white sm:p-8 md:p-10">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <LogoMark />
-              <p aria-label="THESIS CONNECT" className="m-0 text-lg font-semibold tracking-[0.16em] sm:text-xl">
-                <span className="typing-track">THESIS CONNECT</span>
+              <p aria-label="THESIS CONNECT" className="m-0 whitespace-nowrap font-sans text-[clamp(0.875rem,3.5vw,1.25rem)] font-semibold leading-none tracking-[0.04em]">
+                THESIS CONNECT
               </p>
             </div>
-            <LinkButton href="/sign-in" variant="secondary" className="border-white/40 bg-white/8 text-white hover:bg-white/14">
-              Sign In
-            </LinkButton>
+            <AuthNavigation />
           </div>
 
           <div className="mt-12 max-w-3xl">
@@ -100,7 +94,6 @@ export default function HomePage() {
               description="Explore student experiences and learn about thesis supervision."
               href="/faculty"
               action="Explore faculty reviews"
-              tone="neutral"
               icon={
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.7">
                   <path d="M5 6.8A1.8 1.8 0 0 1 6.8 5h10.4A1.8 1.8 0 0 1 19 6.8v10.4a1.8 1.8 0 0 1-1.8 1.8H6.8A1.8 1.8 0 0 1 5 17.2V6.8Z" />
@@ -111,7 +104,7 @@ export default function HomePage() {
 
             <Link
               href="/forum"
-              className="group flex min-h-[220px] flex-col justify-between rounded-3xl border border-[#D0D5DD] bg-[#FAFBFC] p-6 transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(25,28,33,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2459A9] focus-visible:ring-offset-4 lg:min-h-full"
+              className="group flex min-h-[220px] flex-col justify-between rounded-3xl border border-[#D9DDE4] bg-[#F6F7F9] p-6 transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(25,28,33,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2459A9] focus-visible:ring-offset-4 lg:min-h-full"
             >
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-3xl leading-none text-[#1D1D1D]">Thesis Forum</h2>

@@ -57,3 +57,37 @@ public npm script.
 The ten existing genuine Auth/database/browser scenarios remain explicit TODOs
 in the public suite and acceptance cases in
 `BRAC_PENDING_INTEGRATION_TEST_PLAN.md`. Mocks and text checks do not close them.
+
+
+## Trigger-backed BRAC state proposal
+
+Public npm test now also runs tests/auth-feedback.test.cjs. It uses approved application source and synthetic error/password fixtures only. Existing assertions are retained; the handler harness imports the actual feedback helpers and models the SDK signup data shape.
+
+Separate review command: node --test tests/brac-state-proposal.test.cjs. It requires the new ignored brac-state proposal files and fails if absent. It checks original hashes, exact twelve-body preservation, eleven-table restrictive coverage, helper/trigger/bootstrap/ACL/view contracts and lexical transaction boundaries. No SQL or genuine Auth is executed. Keep this suite outside the public npm script until the proposal is approved for publication.
+
+## Baseline BRAC eligibility migration
+
+`npm test` also runs `tests/brac-baseline-eligibility.test.cjs` against the new
+`20261105120000_brac_email_eligibility.sql`. It checks exact baseline RPC body
+preservation, eleven authenticated restrictive gates, view projection preservation,
+Auth prerequisites/ACLs and mailbox vectors using extracted SQL regex source.
+The JavaScript SQL model is not PostgreSQL regex/RLS/Auth integration evidence.
+The older blocked drafts/proposals remain excluded from this public test path.
+
+## Student profile and UI
+
+`npm test` includes `tests/student-profile-ui.test.cjs`: actual profile-completion
+helpers, validation/data adapters, proxy routing, Auth navigation subscription and
+style/accessibility source checks with explicit synthetic SDK/React boundaries.
+These tests neither connect to Supabase nor establish genuine Auth/RLS/browser
+behavior. The new `20261106120000_student_private_profile_details.sql` migration
+has been authored separately; its older proposal remains blocked and unchanged.
+Six-field saves now require all three private columns; missing schema fails
+explicitly instead of declaring a three-field profile complete. Stateful synthetic
+adapter/form tests cover inserts, edits/reloads, user-scoped writes, partial-save
+failures and onboarding navigation. No SQL is executed by these tests.
+
+The old student-profile proposal execution barrier is checked separately with
+`node --test tests/private/student-profile-proposal.test.cjs`. This ignored
+local test requires the ignored SQL proposal and runs only when explicitly
+invoked. The public suite still checks both authored migrations.

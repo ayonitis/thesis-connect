@@ -1,3 +1,5 @@
+import { getCurrentStudentProfile } from "@/lib/data/profile";
+import { isStudentProfileComplete } from "@/lib/profile-completion";
 import { requireBracUser } from "@/lib/auth/require-brac-user";
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
@@ -54,20 +56,18 @@ export async function updateSession(request: NextRequest) {
   try { user = await requireBracUser(supabase); }
   catch { return { response, user, eligible: false, profileStatus: "unknown" as const }; }
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("department")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (profileError) {
+  try {
+    const [profileResult, privateProfile] = await Promise.all([
+      supabase.from("profiles").select("display_name, department").eq("user_id", user.id).maybeSingle(),
+      getCurrentStudentProfile(supabase),
+    ]);
+    if (profileResult.error) return { response, user, eligible: true, profileStatus: "unknown" as const };
+    const profile = profileResult.data;
+    const complete = isStudentProfileComplete(profile ? {
+      displayName: profile.display_name, department: profile.department,
+    } : null, privateProfile.student, privateProfile.details);
+    return { response, user, eligible: true, profileStatus: complete ? "complete" as const : "incomplete" as const };
+  } catch {
     return { response, user, eligible: true, profileStatus: "unknown" as const };
   }
-
-  return {
-    response,
-    user,
-    eligible: true,
-    profileStatus: profile?.department ? ("complete" as const) : ("incomplete" as const),
-  };
 }

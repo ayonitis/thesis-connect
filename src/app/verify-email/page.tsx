@@ -1,29 +1,28 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { BRAC_EMAIL_MESSAGE, validateBracEmail } from "@/lib/auth/email-policy";
+import { authErrorMessage } from "@/lib/auth/auth-feedback";
 import Link from "next/link";
-import { AuthStatus } from "@/components/auth/auth-status";
 import { Footer } from "@/components/layout/footer";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 const errorMap: Record<string, string> = {
+  email_confirmation_required: "Please verify your BRAC University email before signing in. Open your confirmation email or request another below.",
   invalid_or_expired_link: "This verification link is invalid or has expired.",
   missing_callback_params: "Verification link is incomplete. Please request a new confirmation email.",
 };
 
 export default function VerifyEmailPage() {
-  const params = useMemo(() => {
-    if (typeof window === "undefined") {
-      return { status: null as string | null, error: null as string | null };
-    }
-
-    const search = new URLSearchParams(window.location.search);
-    return {
-      status: search.get("status"),
-      error: search.get("error"),
-    };
+  const [params, setParams] = useState<{ status: string | null; error: string | null }>({ status: null, error: null });
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const search = new URLSearchParams(window.location.search);
+      setParams({ status: search.get("status"), error: search.get("error") });
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const [email, setEmail] = useState("");
@@ -35,8 +34,9 @@ export default function VerifyEmailPage() {
     setResendError(null);
     setResendMessage(null);
 
-    if (!email.trim()) {
-      setResendError("Please enter your email to resend confirmation.");
+    const emailResult = validateBracEmail(email, true);
+    if (!emailResult.ok) {
+      setResendError(BRAC_EMAIL_MESSAGE);
       return;
     }
 
@@ -47,12 +47,12 @@ export default function VerifyEmailPage() {
       const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent("/verify-email?status=verified")}`;
       const { error } = await supabase.auth.resend({
         type: "signup",
-        email: email.trim(),
+        email: emailResult.email,
         options: { emailRedirectTo },
       });
 
       if (error) {
-        setResendError("Unable to resend confirmation. Please wait and try again.");
+        setResendError(authErrorMessage(error, "resend"));
         return;
       }
 
@@ -70,10 +70,8 @@ export default function VerifyEmailPage() {
         <PageHeader fallbackHref="/sign-in" title="Verify Email" description="Use your email confirmation link to verify your account." />
 
         <section className="rounded-2xl border border-[#E0E2E6] bg-white p-5">
-          <AuthStatus />
-
           {params.status === "verified" ? (
-            <p className="mt-4 text-sm text-[#166534]">Email verified successfully. You can now sign in.</p>
+            <p className="mt-4 text-sm text-[#166534]">Confirmation link processed. Sign in to check your verified account access.</p>
           ) : null}
 
           {params.error ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import { authErrorMessage, validateRegistrationPassword } from "@/lib/auth/auth-feedback";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -35,8 +36,9 @@ export default function ResetPasswordPage() {
     setError(null);
     setMessage(null);
 
-    if (!password || password.length < 8) {
-      setError("Please enter a new password with at least 8 characters.");
+    const passwordError = validateRegistrationPassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -52,7 +54,7 @@ export default function ResetPasswordPage() {
       const { error: updateError } = await supabase.auth.updateUser({ password });
 
       if (updateError) {
-        setError("Password update failed. Check the password requirements or request a new recovery link.");
+        setError(authErrorMessage(updateError, "password"));
         return;
       }
 

@@ -26,6 +26,7 @@ function load(file, overrides = {}, cache = new Map(), runtime = {}) {
 }
 const policy = load('src/lib/auth/email-policy.ts');
 const guard = load('src/lib/auth/require-brac-user.ts');
+const feedback = load('src/lib/auth/auth-feedback.ts');
 const goodUser = () => ({ id: 'synthetic-id-not-a-real-user', email: 'Student.Name@g.bracu.ac.bd', email_confirmed_at: '2026-11-01T12:00:00Z', is_anonymous: false });
 function client(options = {}) {
   const calls = { rpc: [], tables: [], cleanup: 0, exchange: 0, otp: 0 };
@@ -99,10 +100,10 @@ function handler(file,name,scope){
 }
 function flowScope(c){
   const state={errors:[],success:[],destinations:[],signup:[],login:[],oauth:[]};
-  c.api.auth.signUp=async payload=>{state.signup.push(payload);return {error:null};};
+  c.api.auth.signUp=async payload=>{state.signup.push(payload);return {data:{session:null},error:null};};
   c.api.auth.signInWithPassword=async payload=>{state.login.push(payload);return {error:null};};
   c.api.auth.signInWithOAuth=async payload=>{state.oauth.push(payload);return {error:null};};
-  return { state, scope:{...policy,...guard,email:'student@g.bracu.ac.bd',fullName:'Test',password:'synthetic-password',nextPath:'/partners/my-rooms',window:{location:{origin:'http://test.invalid'}},createClient:()=>c.api,setError:v=>state.errors.push(v),setSuccess:v=>state.success.push(v),setIsLoading:()=>{},setIsEmailLoading:()=>{},setIsGoogleLoading:()=>{},setPassword:()=>{},setDone:v=>{state.done=v;},router:{push:v=>state.destinations.push(v),replace:v=>state.destinations.push(v),refresh:()=>{}}} };
+  return { state, scope:{...policy,...guard,...feedback,email:'student@g.bracu.ac.bd',fullName:'Test',password:'synthetic-password',nextPath:'/partners/my-rooms',window:{location:{origin:'http://test.invalid'}},createClient:()=>c.api,setError:v=>state.errors.push(v),setSuccess:v=>state.success.push(v),setIsLoading:()=>{},setIsEmailLoading:()=>{},setIsGoogleLoading:()=>{},setPassword:()=>{},setDone:v=>{state.done=v;},router:{push:v=>state.destinations.push(v),replace:v=>state.destinations.push(v),refresh:()=>{}}} };
 }
 test('signup handler allows input with ASCII outer whitespace without requiring confirmation at creation',async()=>{
   const f=flowScope(client());f.scope.email=' student@g.bracu.ac.bd\t';await handler('src/app/sign-up/page.tsx','handleSignUp',f.scope)();assert.equal(f.state.signup.length,1);assert.equal(f.state.signup[0].email,'student@g.bracu.ac.bd');
@@ -114,7 +115,7 @@ test('password login checks eligibility before routing',async()=>{
   for(const eligible of [true,false]){const f=flowScope(client({eligible}));await handler('src/app/sign-in/page.tsx','handleEmailSignIn',f.scope)();assert.equal(f.state.login.length,1);assert.equal(f.state.destinations.length,eligible?1:0);}
 });
 test('unconfirmed password login cannot enter app even if Auth returns a session',async()=>{
-  const c=client({user:{...goodUser(),email_confirmed_at:null}}),f=flowScope(c);await handler('src/app/sign-in/page.tsx','handleEmailSignIn',f.scope)();assert.equal(f.state.destinations.length,0);assert.equal(c.calls.cleanup,1);
+  const c=client({user:{...goodUser(),email_confirmed_at:null}}),f=flowScope(c);await handler('src/app/sign-in/page.tsx','handleEmailSignIn',f.scope)();assert.deepEqual(f.state.destinations,['/verify-email?error=email_confirmation_required']);assert.equal(c.calls.cleanup,1);
 });
 test('Google initiation uses current app callback and no claimed domain security hint',async()=>{
   const f=flowScope(client());await handler('src/app/sign-in/page.tsx','handleGoogleSignIn',f.scope)();assert.equal(f.state.oauth[0].provider,'google');assert.ok(f.state.oauth[0].options.redirectTo.startsWith('http://test.invalid/auth/callback?next='));
@@ -381,4 +382,36 @@ test('recovery and confirmation handlers do not expose raw Auth failures',async(
     await handler(file,name,f.scope)({preventDefault(){}});
     assert.ok(f.state.errors.at(-1));assert.ok(!f.state.errors.at(-1).includes('PRIVATE'));
   }
+});
+
+
+test('signup rejects weak passwords before any Auth request', async()=>{
+  for(const password of ['Short!','LongPassword123']) {
+    const f=flowScope(client()); f.scope.password=password;
+    await handler('src/app/sign-up/page.tsx','handleSignUp',f.scope)();
+    assert.equal(f.state.signup.length,0);assert.ok(f.state.errors.at(-1));
+  }
+});
+test('signup maps rate limits and duplicate codes without exposing diagnostics', async()=>{
+  for(const [code,expected] of [['over_email_send_rate_limit',/wait/],['user_already_exists',/already exists/]]) {
+    const c=client(),f=flowScope(c);
+    c.api.auth.signUp=async()=>({data:{session:null},error:{code,message:'PRIVATE synthetic database detail'}});
+    await handler('src/app/sign-up/page.tsx','handleSignUp',f.scope)();
+    assert.match(f.state.errors.at(-1),expected);assert.ok(!f.state.errors.at(-1).includes('PRIVATE'));
+  }
+});
+test('unconfirmed sign-in routes only to verification guidance without protected navigation', async()=>{
+  const c=client(),f=flowScope(c);
+  c.api.auth.signInWithPassword=async()=>({error:{code:'email_not_confirmed',message:'PRIVATE'}});
+  await handler('src/app/sign-in/page.tsx','handleEmailSignIn',f.scope)();
+  assert.deepEqual(f.state.destinations,['/verify-email?error=email_confirmation_required']);
+  assert.match(f.state.errors.at(-1),/verify/);assert.equal(c.calls.rpc.length,0);
+});
+
+
+test('eligibility service errors do not blame the email or navigate into the app', async()=>{
+  const c=client({rpcError:true}),f=flowScope(c);
+  await handler('src/app/sign-in/page.tsx','handleEmailSignIn',f.scope)();
+  assert.deepEqual(f.state.destinations,[]);assert.equal(c.calls.cleanup,1);
+  assert.match(f.state.errors.at(-1),/temporarily unavailable/);
 });

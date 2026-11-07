@@ -60,10 +60,19 @@ export async function proxy(request: NextRequest) {
     return redirected;
   };
 
-  if ((!user || !eligible) && (isProtectedPath(pathname) || pathname === "/profile/complete")) {
+  if ((!user || !eligible) && (isProtectedPath(pathname) || pathname === "/profile" || pathname.startsWith("/profile/"))) {
     const signInUrl = new URL("/sign-in", request.url);
     signInUrl.searchParams.set("next", `${pathname}${search}`);
     return redirectWithCookies(signInUrl);
+  }
+
+  const onboardingExempt = pathname === "/profile" || pathname.startsWith("/profile/")
+    || pathname.startsWith("/auth/")
+    || ["/sign-in", "/sign-up", "/verify-email", "/forgot-password", "/reset-password", "/privacy", "/community-guidelines", "/about"].includes(pathname);
+  if (user && eligible && profileStatus === "incomplete" && !onboardingExempt) {
+    const setup = new URL("/profile/complete", request.url);
+    setup.searchParams.set("next", `${pathname}${search}`);
+    return redirectWithCookies(setup);
   }
 
   if (user && eligible && AUTH_PAGES.has(pathname)) {

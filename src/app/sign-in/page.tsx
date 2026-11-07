@@ -1,11 +1,11 @@
 "use client";
 
 import { BRAC_ACCESS_MESSAGE, BRAC_EMAIL_MESSAGE, validateBracEmail } from "@/lib/auth/email-policy";
-import { requireBracUser, clearRejectedBracSession } from "@/lib/auth/require-brac-user";
+import { requireBracUser, clearRejectedBracSession, BracEligibilityError } from "@/lib/auth/require-brac-user";
+import { authErrorMessage } from "@/lib/auth/auth-feedback";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AuthStatus } from "@/components/auth/auth-status";
 import { Footer } from "@/components/layout/footer";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button, LinkButton } from "@/components/ui/button";
@@ -103,18 +103,24 @@ export default function SignInPage() {
       });
 
       if (signInError) {
-        if (signInError.message.toLowerCase().includes("email not confirmed")) {
-          setError("Please verify your email before signing in.");
-        } else {
-          setError("Unable to sign in. Check your credentials and try again.");
-        }
+        setError(authErrorMessage(signInError, "signin"));
+        if (signInError.code === "email_not_confirmed") router.push("/verify-email?error=email_confirmation_required");
         return;
       }
 
       try { await requireBracUser(supabase); }
-      catch {
-        await clearRejectedBracSession(supabase);
-        setError(BRAC_ACCESS_MESSAGE);
+      catch (eligibilityError) {
+        const cleared = await clearRejectedBracSession(supabase);
+        if (!cleared) {
+          setError("Sign out of this session before trying again.");
+        } else if (eligibilityError instanceof BracEligibilityError && eligibilityError.code === "EMAIL_UNVERIFIED") {
+          setError("Please verify your email before signing in.");
+          router.push("/verify-email?error=email_confirmation_required");
+        } else if (eligibilityError instanceof BracEligibilityError && ["ELIGIBILITY_UNAVAILABLE", "AUTH_UNAVAILABLE"].includes(eligibilityError.code)) {
+          setError("Account verification is temporarily unavailable. Please try again later.");
+        } else {
+          setError(BRAC_ACCESS_MESSAGE);
+        }
         return;
       }
       router.push(nextPath);
@@ -153,13 +159,12 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       <main className="mx-auto w-full max-w-xl px-4 py-6 sm:px-6 lg:px-8">
-        <PageHeader fallbackHref="/" title="Sign In" description="Access student-specific features once authentication is fully configured." />
+        <PageHeader fallbackHref="/" title="Sign In" />
 
         <section className="rounded-2xl border border-[#E0E2E6] bg-white p-5">
-          <AuthStatus />
 
           <div className="mt-4 space-y-3">
-            <Button type="button" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isEmailLoading}>
+            <Button type="button" variant="auth" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading || isEmailLoading}>
               {isGoogleLoading ? "Starting Google sign-in..." : "Continue with Google"}
             </Button>
 
@@ -194,7 +199,7 @@ export default function SignInPage() {
             {callbackError ? <p className="text-sm text-[#B42318]">{callbackError}</p> : null}
             {error ? <p className="text-sm text-[#B42318]">{error}</p> : null}
 
-            <Button type="button" className="w-full" onClick={handleEmailSignIn} disabled={isEmailLoading || isGoogleLoading}>
+            <Button type="button" variant="auth" className="w-full" onClick={handleEmailSignIn} disabled={isEmailLoading || isGoogleLoading}>
               {isEmailLoading ? "Signing in..." : "Sign in with email"}
             </Button>
           </div>

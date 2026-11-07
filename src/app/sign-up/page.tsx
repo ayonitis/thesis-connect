@@ -2,9 +2,10 @@
 
 import { BRAC_EMAIL_MESSAGE, validateBracEmail } from "@/lib/auth/email-policy";
 
+import { authErrorMessage, validateRegistrationPassword } from "@/lib/auth/auth-feedback";
+import { clearRejectedBracSession } from "@/lib/auth/require-brac-user";
 import Link from "next/link";
 import { useState } from "react";
-import { AuthStatus } from "@/components/auth/auth-status";
 import { Footer } from "@/components/layout/footer";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -33,8 +34,9 @@ export default function SignUpPage() {
       return;
     }
 
-    if (!password || password.length < 8) {
-      setError("Password must be at least 8 characters.");
+    const passwordError = validateRegistrationPassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -43,7 +45,7 @@ export default function SignUpPage() {
     try {
       const supabase = createClient();
       const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent("/verify-email?status=verified")}`;
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: emailResult.email,
         password,
         options: {
@@ -56,14 +58,20 @@ export default function SignUpPage() {
       });
 
       if (signUpError) {
-        setError("Registration could not be completed. Check your university email and try again.");
+        setError(authErrorMessage(signUpError, "signup"));
         return;
       }
 
-      setSuccess("Registration submitted. Please check your email and verify your account before signing in.");
+      // Confirmation-required projects intentionally obscure duplicate-account responses.
+      // Do not infer account existence from identities or a fabricated user object.
+      if (data.session && !await clearRejectedBracSession(supabase)) {
+        setError("Sign out of this session before continuing, then open Verify Email for guidance.");
+        return;
+      }
+      setSuccess("Check your BRAC University inbox for a verification link before signing in. If you already have an account, sign in or reset your password. You can request another link on the Verify Email page.");
       setPassword("");
     } catch {
-      setError("Unable to register right now. Please try again.");
+      setError(authErrorMessage(null, "signup"));
     } finally {
       setIsLoading(false);
     }
@@ -72,11 +80,9 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       <main className="mx-auto w-full max-w-xl px-4 py-6 sm:px-6 lg:px-8">
-        <PageHeader fallbackHref="/sign-in" title="Create your account" description="Email-based registration interface for Thesis Connect." />
+        <PageHeader fallbackHref="/sign-in" title="Create your account" />
 
         <section className="rounded-2xl border border-[#E0E2E6] bg-white p-5">
-          <AuthStatus />
-
           <div className="mt-4 space-y-3">
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-[#2F3A4A]">Full name</span>
@@ -96,18 +102,22 @@ export default function SignUpPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="new-password"
+                minLength={10}
+                aria-describedby="password-guidance"
               />
             </label>
 
+            <p id="password-guidance" className="text-sm text-[#4B5563]">Use at least 10 characters, including punctuation or a special character.</p>
             {error ? <p className="text-sm text-[#B42318]">{error}</p> : null}
             {success ? <p className="text-sm text-[#166534]">{success}</p> : null}
 
-            <Button type="button" className="w-full" onClick={handleSignUp} disabled={isLoading}>
+            <Button type="button" variant="auth" className="w-full" onClick={handleSignUp} disabled={isLoading}>
               {isLoading ? "Registering..." : "Register with email"}
             </Button>
           </div>
 
           <p className="mt-4 text-sm text-[#4B5563]">
+            <Link href="/verify-email" className="text-[#2459A9] hover:underline">Verify email or resend confirmation</Link><br />
             Already have an account?{" "}
             <Link href="/sign-in" className="text-[#2459A9] hover:underline">
               Sign in

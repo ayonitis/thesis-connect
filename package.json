@@ -7,7 +7,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/brac-email-enforcement.test.cjs tests/review-ownership-client.test.cjs tests/dependency-compatibility.test.cjs"
+    "test": "node --test tests/brac-email-enforcement.test.cjs tests/review-ownership-client.test.cjs tests/dependency-compatibility.test.cjs tests/auth-feedback.test.cjs tests/brac-baseline-eligibility.test.cjs tests/student-profile-ui.test.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

@@ -1,7 +1,8 @@
+import { validateStudentProfileDetails, type StudentProfileDetails } from "@/lib/profile-completion";
 import { throwSafeDataError } from "./safe-errors";
 import { requireBracUser } from "@/lib/auth/require-brac-user";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { DepartmentValue } from "@/lib/departments";
+import { DEPARTMENTS, type DepartmentValue } from "@/lib/departments";
 
 export type Profile = {
   userId: string;
@@ -131,7 +132,7 @@ export async function getCurrentStudentPrivate(supabase: SupabaseClient): Promis
   return data ? toStudentPrivate(data as Parameters<typeof toStudentPrivate>[0]) : null;
 }
 
-export async function updateCurrentStudentPrivate(supabase: SupabaseClient, studentIdInput: string): Promise<StudentPrivate> {
+export async function updateCurrentStudentPrivate(supabase: SupabaseClient, studentIdInput: string, details: StudentProfileDetails): Promise<StudentPrivate> {
   const userId = await getCurrentUserId(supabase);
   const studentId = studentIdInput.trim();
 
@@ -139,10 +140,16 @@ export async function updateCurrentStudentPrivate(supabase: SupabaseClient, stud
     throw new Error("Student ID must contain between 1 and 64 characters.");
   }
 
+  validateStudentProfileDetails(details);
+  const values = { student_id: studentId,
+    cgpa: details.cgpa,
+    current_semester: details.currentSemester!.trim(),
+    brac_like: details.bracLike?.trim() || null,
+  };
   const existing = await getCurrentStudentPrivate(supabase);
   const query = existing
-    ? supabase.from("student_private").update({ student_id: studentId }).eq("user_id", userId)
-    : supabase.from("student_private").insert({ user_id: userId, student_id: studentId });
+    ? supabase.from("student_private").update(values).eq("user_id", userId)
+    : supabase.from("student_private").insert({ user_id: userId, ...values });
   const { data, error } = await query.select("user_id, student_id, created_at, updated_at").single();
 
   if (error) {
@@ -150,4 +157,45 @@ export async function updateCurrentStudentPrivate(supabase: SupabaseClient, stud
   }
 
   return toStudentPrivate(data as Parameters<typeof toStudentPrivate>[0]);
+}
+
+export async function getCurrentStudentProfile(supabase: SupabaseClient): Promise<{
+  student: StudentPrivate | null;
+  details: StudentProfileDetails | null;
+}> {
+  const userId = await getCurrentUserId(supabase);
+  const { data, error } = await supabase.from("student_private")
+    .select("user_id, student_id, created_at, updated_at, cgpa, current_semester, brac_like")
+    .eq("user_id", userId).maybeSingle();
+  if (error) throwSafeDataError(error);
+  return {
+    student: data ? toStudentPrivate(data) : null,
+    details: data ? { cgpa: data.cgpa === null ? null : Number(data.cgpa),
+      currentSemester: data.current_semester, bracLike: data.brac_like } : null,
+  };
+}
+
+export async function saveCurrentStudentProfile(supabase: SupabaseClient, input: {
+  displayName: string;
+  studentId: string;
+  department: DepartmentValue;
+  details: StudentProfileDetails;
+}): Promise<void> {
+  await requireBracUser(supabase);
+  // Validate the entire request before either write. Both existing helpers derive
+  // their ownership filters from fresh authenticated identity, never caller UUIDs.
+  if (!input.displayName.trim() || input.displayName.trim().length > 100) {
+    throw new Error("Full name must contain between 1 and 100 characters.");
+  }
+  if (!input.studentId.trim() || input.studentId.trim().length > 64) {
+    throw new Error("Student ID must contain between 1 and 64 characters.");
+  }
+  if (!DEPARTMENTS.some(item => item.value === input.department)) {
+    throw new Error("Please select your department.");
+  }
+  validateStudentProfileDetails(input.details);
+  // This is intentionally two requests, not an atomic transaction. Any failure
+  // rejects the save, and the form must not claim success or navigate onward.
+  await updateCurrentStudentPrivate(supabase, input.studentId, input.details);
+  await updateCurrentProfile(supabase, { displayName: input.displayName, department: input.department });
 }

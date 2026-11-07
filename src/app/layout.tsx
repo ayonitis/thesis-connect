@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className={`${inter.variable} ${sourceSerif.variable} bg-[#FFFFFF] text-[#191C21] antialiased`}>
-        {children}
+        <div className="tc-app-background">{children}</div>
       </body>
     </html>
   );
