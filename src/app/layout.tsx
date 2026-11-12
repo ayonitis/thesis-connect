@@ -1,15 +1,40 @@
 import type { Metadata } from "next";
-import { Inter, Source_Serif_4 } from "next/font/google";
+import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
+const inter = localFont({
+  src: [
+    { path: "./fonts/inter-cyrillic-ext.woff2" },
+    { path: "./fonts/inter-cyrillic.woff2" },
+    { path: "./fonts/inter-greek-ext.woff2" },
+    { path: "./fonts/inter-greek.woff2" },
+    { path: "./fonts/inter-vietnamese.woff2" },
+    { path: "./fonts/inter-latin-ext.woff2" },
+    { path: "./fonts/inter-latin.woff2" },
+  ],
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: "Arial",
   variable: "--font-inter",
 });
 
-const sourceSerif = Source_Serif_4({
-  subsets: ["latin"],
+const sourceSerif = localFont({
+  src: [
+    { path: "./fonts/source-serif-4-cyrillic-ext.woff2" },
+    { path: "./fonts/source-serif-4-cyrillic.woff2" },
+    { path: "./fonts/source-serif-4-greek.woff2" },
+    { path: "./fonts/source-serif-4-vietnamese.woff2" },
+    { path: "./fonts/source-serif-4-latin-ext.woff2" },
+    { path: "./fonts/source-serif-4-latin.woff2" },
+  ],
+  weight: "200 900",
+  style: "normal",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: "Times New Roman",
   variable: "--font-source-serif",
 });
 
