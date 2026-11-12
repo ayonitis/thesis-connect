@@ -6,11 +6,15 @@ import { useParams, useRouter } from "next/navigation";
 import { Footer } from "@/components/layout/footer";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { createOwnFacultyReview, deleteOwnFacultyReview, getFacultyBySlug, getOwnFacultyReviews, updateOwnFacultyReview, type FacultyWithReviews } from "@/lib/data/faculty";
+import { createOwnFacultyReview, deleteOwnFacultyReview, getFacultyBySlug, getOwnFacultyReviews, updateOwnFacultyReview, updateOwnLegacyFacultyReview, type FacultyWithReviews } from "@/lib/data/faculty";
 import { createClient } from "@/lib/supabase/client";
 import { ratingTone } from "@/lib/review-utils";
 
-type RatingField = "clarity" | "responsiveness" | "fairness" | "workload";
+import { FACULTY_REVIEW_RATINGS, hasCompleteFacultyRatings, reviewMetrics, type FacultyRatingKey, type LegacyReviewScores } from "@/lib/faculty-review-ratings";
+
+const emptyRatings = {
+  marking: null, responsiveness: null, responsibility: null, connection: null, recommendation_letter: null,
+};
 
 export default function PostReviewPage() {
   const params = useParams<{ slug: string }>();
@@ -24,12 +28,8 @@ function FacultyReviewForm({ slug }: { slug: string }) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  const [ratings, setRatings] = useState<Record<RatingField, number | null>>({
-    clarity: null,
-    responsiveness: null,
-    fairness: null,
-    workload: null,
-  });
+  const [ratings, setRatings] = useState<Record<FacultyRatingKey, number | null>>(emptyRatings);
+  const [legacyScores, setLegacyScores] = useState<LegacyReviewScores | null>(null);
 
   const [description, setDescription] = useState("");
   const [reviewId, setReviewId] = useState<string | null>(null);
@@ -55,7 +55,12 @@ function FacultyReviewForm({ slug }: { slug: string }) {
             : undefined;
           if (existing) {
             setReviewId(existing.id);
-            setRatings({ clarity: existing.clarity, responsiveness: existing.responsiveness, fairness: existing.fairness, workload: existing.workload });
+            if (existing.rating_version === 1) setLegacyScores(existing);
+            else setRatings({
+              marking: existing.marking, responsiveness: existing.responsiveness,
+              responsibility: existing.responsibility, connection: existing.connection,
+              recommendation_letter: existing.recommendation_letter,
+            });
             setDescription(existing.description);
           }
           setLoadError("");
@@ -85,15 +90,23 @@ function FacultyReviewForm({ slug }: { slug: string }) {
   const submitReview = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!faculty || saving) return;
-    if (Object.values(ratings).some((value) => value === null) || description.trim().length < 10 || description.trim().length > 5000) {
-      setSaveError("Choose all four ratings and provide a description between 10 and 5,000 characters.");
+    if (description.trim().length < 10 || description.trim().length > 5000) {
+      setSaveError("Provide a description between 10 and 5,000 characters.");
       return;
     }
     setSaving(true); setSaveError(""); setNotice("");
-    const input = { clarity: ratings.clarity!, responsiveness: ratings.responsiveness!, fairness: ratings.fairness!, workload: ratings.workload!, description };
     try {
-      if (reviewId) await updateOwnFacultyReview(createClient(), reviewId, input);
-      else setReviewId(await createOwnFacultyReview(createClient(), { facultyId: faculty.id, ...input }));
+      if (reviewId && legacyScores) {
+        await updateOwnLegacyFacultyReview(createClient(), reviewId, legacyScores, description);
+      } else {
+        if (!hasCompleteFacultyRatings(ratings)) {
+          setSaveError("Choose all five ratings.");
+          return;
+        }
+        const input = { ...ratings, description };
+        if (reviewId) await updateOwnFacultyReview(createClient(), reviewId, input);
+        else setReviewId(await createOwnFacultyReview(createClient(), { facultyId: faculty.id, ...input }));
+      }
       setNotice(reviewId ? "Your review was updated." : "Your review was submitted.");
       router.refresh();
     } catch (error) {
@@ -108,7 +121,8 @@ function FacultyReviewForm({ slug }: { slug: string }) {
     try {
       await deleteOwnFacultyReview(createClient(), reviewId);
       setReviewId(null);
-      setRatings({ clarity: null, responsiveness: null, fairness: null, workload: null });
+      setRatings(emptyRatings);
+      setLegacyScores(null);
       setDescription("");
       setNotice("Your review was deleted.");
       router.refresh();
@@ -184,37 +198,18 @@ function FacultyReviewForm({ slug }: { slug: string }) {
           className="rounded-2xl border border-[#E0E2E6] bg-white p-5"
         >
           <div className="space-y-4">
-            <RatingPicker
-              label="Clarity rating"
-              value={ratings.clarity}
-              onChange={(value) =>
-                setRatings((prev) => ({ ...prev, clarity: value }))
-              }
-            />
-
-            <RatingPicker
-              label="Responsiveness rating"
-              value={ratings.responsiveness}
-              onChange={(value) =>
-                setRatings((prev) => ({ ...prev, responsiveness: value }))
-              }
-            />
-
-            <RatingPicker
-              label="Fairness rating"
-              value={ratings.fairness}
-              onChange={(value) =>
-                setRatings((prev) => ({ ...prev, fairness: value }))
-              }
-            />
-
-            <RatingPicker
-              label="Workload rating"
-              value={ratings.workload}
-              onChange={(value) =>
-                setRatings((prev) => ({ ...prev, workload: value }))
-              }
-            />
+            {legacyScores ? (
+              <div className="space-y-2 rounded-xl border border-[#E2E6EB] bg-[#FAFBFC] p-4 text-sm">
+                <p className="font-semibold">Legacy ratings</p>
+                <p>Your original scores are preserved. You can still edit the description.</p>
+                <ul className="flex flex-wrap gap-3">
+                  {reviewMetrics(legacyScores).map(({ label, score }) => <li key={label}>{label}: {score}/10</li>)}
+                </ul>
+              </div>
+            ) : FACULTY_REVIEW_RATINGS.map(([key, label]) => (
+              <RatingPicker key={key} label={label} value={ratings[key]}
+                onChange={(value) => setRatings((prev) => ({ ...prev, [key]: value }))} />
+            ))}
 
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-[#2F3A4A]">

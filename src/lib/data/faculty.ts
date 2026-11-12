@@ -1,4 +1,5 @@
 import { throwSafeDataError } from "./safe-errors";
+import type { FacultyRatings, LegacyReviewScores, ReviewScores } from "@/lib/faculty-review-ratings";
 import { requireBracUser } from "@/lib/auth/require-brac-user";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -14,17 +15,22 @@ export type FacultyPublic = {
   created_at: string;
 };
 
-export type FacultyReviewPublic = {
+export type FacultyReviewPublic = ReviewScores & {
   faculty_id: string;
   author_label: string;
-  clarity: number;
-  responsiveness: number;
-  fairness: number;
-  workload: number;
   description: string;
 };
 
 export type FacultyWithReviews = FacultyPublic & {
+  official_profile?: {
+    designation?: string;
+    email?: string;
+    address?: string;
+    roles?: string[];
+    levels?: string[];
+    types?: string[];
+    research_interests?: string[];
+  } | null;
   reviews: FacultyReviewPublic[];
 };
 
@@ -38,17 +44,15 @@ export type FacultyProfileResult = {
   canViewReviews: boolean;
 };
 
-export type ReviewInput = {
+export type ReviewInput = FacultyRatings & {
   facultyId: string;
-  clarity: number;
-  responsiveness: number;
-  fairness: number;
-  workload: number;
   description: string;
 };
 
-export type OwnFacultyReview = ReviewInput & {
+export type OwnFacultyReview = ReviewScores & {
   id: string;
+  facultyId: string;
+  description: string;
   moderationStatus: "published" | "hidden";
   createdAt: string;
   facultyName: string | null;
@@ -70,23 +74,6 @@ export type OwnFacultyAddRequest = FacultyAddRequestInput & {
   decidedAt: string | null;
 };
 
-export type AdminFacultyRequest = OwnFacultyAddRequest & {
-  requesterUserId: string;
-};
-
-export type AdminFacultyReview = Omit<OwnFacultyReview, "facultyName" | "facultySlug"> & {
-  reviewerUserId: string;
-  facultyName: string | null;
-};
-
-export type ModerationLogEntry = {
-  id: string;
-  action: string;
-  targetTable: string;
-  targetId: string;
-  createdAt: string;
-};
-
 async function requireAuthenticatedUser(supabase: SupabaseClient) {
   return requireBracUser(supabase);
 }
@@ -98,8 +85,9 @@ function throwIfError(error: { message: string; code?: string } | null) {
 const FACULTY_COLUMNS =
   "id, slug, name, initials, department, summary_note, created_at";
 
-const REVIEW_COLUMNS =
-  "faculty_id, author_label, clarity, responsiveness, fairness, workload, description";
+const RATING_COLUMNS =
+  "rating_version, clarity, responsiveness, fairness, workload, marking, responsibility, connection, recommendation_letter";
+const REVIEW_COLUMNS = `faculty_id, author_label, description, ${RATING_COLUMNS}`;
 
 async function canCurrentUserViewReviews(supabase: SupabaseClient): Promise<boolean> {
   try { await requireBracUser(supabase); return true; }
@@ -118,6 +106,16 @@ async function getPublishedReviews(
     .from("faculty_reviews_public")
     .select(REVIEW_COLUMNS)
     .in("faculty_id", facultyIds);
+
+  // The directory can be deployed before the independent ratings-v2 migration.
+  if (error?.code === "42703") {
+    const legacy = await supabase
+      .from("faculty_reviews_public")
+      .select("faculty_id, author_label, description, clarity, responsiveness, fairness, workload")
+      .in("faculty_id", facultyIds);
+    if (legacy.error) throwSafeDataError(legacy.error);
+    return (legacy.data ?? []).map((review) => ({ ...review, rating_version: 1 }));
+  }
 
   if (error) {
     throwSafeDataError(error);
@@ -178,7 +176,7 @@ export async function getFacultyBySlug(
 ): Promise<FacultyProfileResult> {
   const { data, error } = await supabase
     .from("faculty_public")
-    .select(FACULTY_COLUMNS)
+    .select(`${FACULTY_COLUMNS}, official_profile`)
     .eq("slug", slug)
     .maybeSingle();
 
@@ -215,12 +213,12 @@ export async function getOwnFacultyReviews(
   const user = await requireAuthenticatedUser(supabase);
   const { data, error } = await supabase
     .from("faculty_reviews")
-    .select("id, faculty_id, clarity, responsiveness, fairness, workload, description, moderation_status, created_at")
+    .select(`id, faculty_id, description, moderation_status, created_at, ${RATING_COLUMNS}`)
     .eq("reviewer_user_id", user.id)
     .order("created_at", { ascending: false });
   throwIfError(error);
 
-  const rows = (data ?? []) as Array<Record<string, unknown>>;
+  const rows = (data ?? []) as Array<ReviewScores & { id: string; faculty_id: string; description: string; moderation_status: OwnFacultyReview["moderationStatus"]; created_at: string }>;
   const facultyIds = rows.map((row) => String(row.faculty_id));
   const { data: facultyRows, error: facultyError } = facultyIds.length
     ? await supabase.from("faculty_public").select("id, name, slug").in("id", facultyIds)
@@ -233,10 +231,8 @@ export async function getOwnFacultyReviews(
   return rows.map((row) => {
     const faculty = facultyById.get(String(row.faculty_id));
     return {
-      id: String(row.id), facultyId: String(row.faculty_id), clarity: Number(row.clarity),
-      responsiveness: Number(row.responsiveness), fairness: Number(row.fairness), workload: Number(row.workload),
-      description: String(row.description), moderationStatus: row.moderation_status as "published" | "hidden",
-      createdAt: String(row.created_at), facultyName: faculty ? String(faculty.name) : null,
+      ...row, facultyId: row.faculty_id, moderationStatus: row.moderation_status,
+      createdAt: row.created_at, facultyName: faculty ? String(faculty.name) : null,
       facultySlug: faculty ? String(faculty.slug) : null,
     };
   });
@@ -244,9 +240,8 @@ export async function getOwnFacultyReviews(
 
 export async function createOwnFacultyReview(supabase: SupabaseClient, input: ReviewInput): Promise<string> {
   await requireBracUser(supabase);
-  const { data, error } = await supabase.rpc("create_own_faculty_review", {
-    p_faculty_id: input.facultyId, p_clarity: input.clarity, p_responsiveness: input.responsiveness,
-    p_fairness: input.fairness, p_workload: input.workload, p_description: input.description,
+  const { data, error } = await supabase.rpc("create_own_faculty_review_v2", {
+    p_faculty_id: input.facultyId, ...reviewRatingArgs(input),
   });
   throwIfError(error);
   if (typeof data !== "string") throw new Error("The review service returned an invalid identifier.");
@@ -255,9 +250,25 @@ export async function createOwnFacultyReview(supabase: SupabaseClient, input: Re
 
 export async function updateOwnFacultyReview(supabase: SupabaseClient, reviewId: string, input: Omit<ReviewInput, "facultyId">): Promise<void> {
   await requireBracUser(supabase);
+  const { error } = await supabase.rpc("update_own_faculty_review_v2", {
+    p_review_id: reviewId, ...reviewRatingArgs(input),
+  });
+  throwIfError(error);
+}
+
+function reviewRatingArgs(input: Omit<ReviewInput, "facultyId">) {
+  return {
+    p_marking: input.marking, p_responsiveness: input.responsiveness,
+    p_responsibility: input.responsibility, p_connection: input.connection,
+    p_recommendation_letter: input.recommendation_letter, p_description: input.description,
+  };
+}
+
+export async function updateOwnLegacyFacultyReview(supabase: SupabaseClient, reviewId: string, scores: LegacyReviewScores, description: string): Promise<void> {
+  await requireBracUser(supabase);
   const { error } = await supabase.rpc("update_own_faculty_review", {
-    p_review_id: reviewId, p_clarity: input.clarity, p_responsiveness: input.responsiveness,
-    p_fairness: input.fairness, p_workload: input.workload, p_description: input.description,
+    p_review_id: reviewId, p_clarity: scores.clarity, p_responsiveness: scores.responsiveness,
+    p_fairness: scores.fairness, p_workload: scores.workload, p_description: description,
   });
   throwIfError(error);
 }
@@ -292,48 +303,4 @@ export async function getOwnFacultyAddRequests(supabase: SupabaseClient): Promis
     status: row.status as OwnFacultyAddRequest["status"], decisionNote: row.decision_note as string | null,
     createdAt: String(row.created_at), decidedAt: row.decided_at as string | null,
   }));
-}
-
-export async function isCurrentUserAdmin(supabase: SupabaseClient): Promise<boolean> {
-  await requireBracUser(supabase);
-  const { data, error } = await supabase.rpc("is_admin");
-  throwIfError(error);
-  return data === true;
-}
-
-export async function getAdminFacultyData(supabase: SupabaseClient) {
-  await requireBracUser(supabase);
-  if (!(await isCurrentUserAdmin(supabase))) throw new Error("Administrator access is required.");
-  const [requests, reviews, faculty, logs] = await Promise.all([
-    supabase.from("faculty_add_requests").select("id, requester_user_id, proposed_name, proposed_department, proposed_research_interests, rationale, status, decision_note, created_at, decided_at").order("created_at", { ascending: false }),
-    supabase.from("faculty_reviews").select("id, faculty_id, reviewer_user_id, clarity, responsiveness, fairness, workload, description, moderation_status, created_at").order("created_at", { ascending: false }),
-    supabase.from("faculty").select("id, name"),
-    supabase.from("moderation_log").select("id, action, target_table, target_id, created_at").order("created_at", { ascending: false }).limit(10),
-  ]);
-  throwIfError(requests.error); throwIfError(reviews.error); throwIfError(faculty.error); throwIfError(logs.error);
-  const names = new Map(((faculty.data ?? []) as Array<Record<string, unknown>>).map((item) => [String(item.id), String(item.name)]));
-  return {
-    requests: ((requests.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
-      id: String(row.id), requesterUserId: String(row.requester_user_id), proposedName: String(row.proposed_name), proposedDepartment: row.proposed_department as DepartmentValue,
-      proposedResearchInterests: (row.proposed_research_interests ?? []) as string[], rationale: String(row.rationale), status: row.status as OwnFacultyAddRequest["status"],
-      decisionNote: row.decision_note as string | null, createdAt: String(row.created_at), decidedAt: row.decided_at as string | null,
-    } satisfies AdminFacultyRequest)),
-    reviews: ((reviews.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
-      id: String(row.id), facultyId: String(row.faculty_id), reviewerUserId: String(row.reviewer_user_id), clarity: Number(row.clarity), responsiveness: Number(row.responsiveness), fairness: Number(row.fairness), workload: Number(row.workload), description: String(row.description), moderationStatus: row.moderation_status as "published" | "hidden", createdAt: String(row.created_at), facultyName: names.get(String(row.faculty_id)) ?? null,
-    } satisfies AdminFacultyReview)),
-    facultyCount: (faculty.data ?? []).length,
-    logs: ((logs.data ?? []) as Array<Record<string, unknown>>).map((row) => ({ id: String(row.id), action: String(row.action), targetTable: String(row.target_table), targetId: String(row.target_id), createdAt: String(row.created_at) } satisfies ModerationLogEntry)),
-  };
-}
-
-export async function decideFacultyAddRequest(supabase: SupabaseClient, requestId: string, decision: "approved" | "rejected", note: string): Promise<void> {
-  await requireBracUser(supabase);
-  const { error } = await supabase.rpc("decide_faculty_add_request", { p_request_id: requestId, p_decision: decision, p_decision_note: note || null });
-  throwIfError(error);
-}
-
-export async function moderateFacultyReview(supabase: SupabaseClient, reviewId: string, visibility: "published" | "hidden"): Promise<void> {
-  await requireBracUser(supabase);
-  const { error } = await supabase.rpc("moderate_faculty_review", { p_review_id: reviewId, p_visibility: visibility });
-  throwIfError(error);
 }

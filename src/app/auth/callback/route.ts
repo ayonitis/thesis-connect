@@ -9,14 +9,19 @@ export async function GET(request: Request) {
   const redirect = (destination: URL) => NextResponse.redirect(destination, {
     headers: { "Cache-Control": "private, no-cache, no-store, must-revalidate, max-age=0", Expires: "0", Pragma: "no-cache" },
   });
-  const denied = () => redirect(new URL("/sign-in?error=brac_access_required", url.origin));
+  const next = getSafeInternalRedirectPath(url.searchParams.get("next"), "/");
+  const destination = new URL(next, url.origin);
+  const isAdminPath = destination.pathname === "/admin" || destination.pathname.startsWith("/admin/");
+  const denied = () => redirect(new URL(
+    isAdminPath ? "/sign-in?next=/admin&error=admin_access_required" : "/sign-in?error=brac_access_required",
+    url.origin,
+  ));
   const code = url.searchParams.get("code");
   const tokenHash = url.searchParams.get("token_hash");
   const type = url.searchParams.get("type");
   const otpTypes = ["signup", "invite", "magiclink", "recovery", "email_change", "email"];
   // Unrelated GETs must never mutate an existing session or even construct an Auth client.
   if (url.searchParams.has("error") || (!code && !(tokenHash && type && otpTypes.includes(type)))) return denied();
-  const next = getSafeInternalRedirectPath(url.searchParams.get("next"), "/");
   let context;
   try { context = await createRouteClient(); }
   catch { return denied(); }
@@ -49,12 +54,32 @@ export async function GET(request: Request) {
     if (result.error) return await rejectFlow();
     establishedToken = result.data.session?.access_token || null;
     assertCookiePersistence();
+    if (code && (isAdminPath || next === "/")) {
+      if (!establishedToken) return await rejectFlow();
+      const { data, error } = await supabase.auth.getUser(establishedToken);
+      if (error || !data.user) return await rejectFlow();
+
+      const user = data.user;
+      if (user.email?.toLowerCase() === "ayon3015@gmail.com" &&
+          user.is_anonymous === false && user.email_confirmed_at &&
+          Number.isFinite(Date.parse(user.email_confirmed_at))) {
+        const admin = await supabase.rpc("is_admin");
+        assertCookiePersistence();
+        if (admin.error || typeof admin.data !== "boolean") return await rejectFlow();
+        if (admin.data) return redirect(isAdminPath ? destination : new URL("/admin", url.origin));
+
+        // Keep the verified Auth session available for operator bootstrap.
+        return redirect(new URL("/sign-in?next=/admin&status=admin_pending", url.origin));
+      }
+
+      if (isAdminPath) return await rejectFlow();
+    }
     await requireBracUser(supabase);
     assertCookiePersistence();
     if (!code) {
       return redirect(new URL(type === "recovery" ? "/reset-password" : "/verify-email?status=verified", url.origin));
     }
-    return redirect(new URL(next, url.origin));
+    return redirect(destination);
   } catch {
     return await rejectFlow();
   }

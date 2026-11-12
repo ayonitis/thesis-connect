@@ -9,7 +9,6 @@ function isProtectedPath(pathname: string) {
   if (
     pathname === "/partners/create" ||
     pathname === "/partners/my-rooms" ||
-    (pathname === "/admin" || pathname.startsWith("/admin/")) ||
     pathname === "/faculty/post-review"
   ) {
     return true;
@@ -27,7 +26,7 @@ function isProtectedPath(pathname: string) {
 }
 
 function requiresCompletedProfile(pathname: string) {
-  if (pathname === "/partners/create" || pathname === "/partners/my-rooms" || pathname === "/faculty/post-review" || (pathname === "/admin" || pathname.startsWith("/admin/"))) {
+  if (pathname === "/partners/create" || pathname === "/partners/my-rooms" || pathname === "/faculty/post-review") {
     return true;
   }
 
@@ -60,7 +59,20 @@ export async function proxy(request: NextRequest) {
     return redirected;
   };
 
-  if ((!user || !eligible) && (isProtectedPath(pathname) || pathname === "/profile" || pathname.startsWith("/profile/"))) {
+  // The admin layout checks the dedicated database role after cookie refresh.
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    if (!user) {
+      const signIn = new URL("/sign-in", request.url);
+      signIn.searchParams.set("next", pathname);
+      return redirectWithCookies(signIn);
+    }
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
+  }
+
+  // The profile page verifies admin or student access independently on the server.
+  if ((!user && pathname === "/profile") ||
+      ((!user || !eligible) && (isProtectedPath(pathname) || pathname.startsWith("/profile/")))) {
     const signInUrl = new URL("/sign-in", request.url);
     signInUrl.searchParams.set("next", `${pathname}${search}`);
     return redirectWithCookies(signInUrl);

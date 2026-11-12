@@ -11,7 +11,8 @@ import {
   type FacultyWithReviews,
 } from "@/lib/data/faculty";
 import { createClient } from "@/lib/supabase/client";
-import { average, ratingTone } from "@/lib/review-utils";
+import { ratingTone } from "@/lib/review-utils";
+import { reviewMetrics, summarizeFacultyReviews } from "@/lib/faculty-review-ratings";
 
 export default function FacultyProfilePage() {
   const params = useParams<{ slug: string }>();
@@ -101,13 +102,17 @@ export default function FacultyProfilePage() {
     );
   }
 
-  const clarity = average(faculty.reviews.map((review) => review.clarity));
-  const responsiveness = average(
-    faculty.reviews.map((review) => review.responsiveness),
-  );
-  const fairness = average(faculty.reviews.map((review) => review.fairness));
-  const workload = average(faculty.reviews.map((review) => review.workload));
-  const overall = average([clarity, responsiveness, fairness, workload]);
+  const summaries = summarizeFacultyReviews(faculty.reviews);
+  const profile = faculty.official_profile;
+  const email = profile?.email;
+  const contact = email && /^[a-z0-9._+-]+@bracu\.ac\.bd$/i.test(email) ? email : null;
+  const details = [
+    ["Designation", profile?.designation],
+    ...(profile?.address ? [["Address", profile.address]] : []),
+    ["Role", profile?.roles?.join(", ")],
+    ["Level", profile?.levels?.join(", ")],
+    ["Type", profile?.types?.join(", ")],
+  ];
 
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
@@ -129,6 +134,31 @@ export default function FacultyProfilePage() {
             {faculty.department}
           </p>
 
+          <dl className="mt-4 grid gap-4 text-sm text-[#4B5563] sm:grid-cols-2">
+            {details.map(([label, value]) => (
+              <div key={label}>
+                <dt className="font-semibold text-[#1F2937]">{label}</dt>
+                <dd className="whitespace-pre-line">{value || "Not listed in the official directory"}</dd>
+              </div>
+            ))}
+            <div>
+              <dt className="font-semibold text-[#1F2937]">Official BRACU email</dt>
+              <dd>
+                {contact ? <a className="break-all underline" href={`mailto:${contact}`}>{contact}</a> : "Not listed"}
+              </dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="font-semibold text-[#1F2937]">Research interests</dt>
+              <dd>
+                {profile?.research_interests?.length ? (
+                  <ul className="mt-1 list-inside list-disc">
+                    {profile.research_interests.map((interest) => <li key={interest}>{interest}</li>)}
+                  </ul>
+                ) : "Not listed in the official directory"}
+              </dd>
+            </div>
+          </dl>
+
           {faculty.summary_note ? (
             <section className="mt-6 rounded-xl border border-[#E2E6EB] bg-[#FAFBFC] p-4">
               <h2 className="text-xl font-semibold text-[#1F2937]">
@@ -146,13 +176,17 @@ export default function FacultyProfilePage() {
                 Review Summary
               </h2>
 
-              {faculty.reviews.length > 0 ? (
-                <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-                  <SummaryPill label="Clarity" score={clarity} />
-                  <SummaryPill label="Responsiveness" score={responsiveness} />
-                  <SummaryPill label="Fairness" score={fairness} />
-                  <SummaryPill label="Workload" score={workload} />
-                  <SummaryPill label="Overall" score={overall} />
+              {summaries.length > 0 ? (
+                <div className="mt-3 space-y-4">
+                  {summaries.map(({ version, count, metrics, overall }) => (
+                    <div key={version}>
+                      <h3 className="mb-2 text-sm font-semibold">{version === 1 ? "Legacy ratings" : "Current ratings"} ({count} reviews)</h3>
+                      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {metrics.map(({ label, score }) => <SummaryPill key={label} label={label} score={score} />)}
+                        <SummaryPill label="Overall" score={overall} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p className="mt-2 text-sm text-[#6B7280]">
@@ -184,14 +218,9 @@ export default function FacultyProfilePage() {
                       {review.author_label}
                     </p>
 
-                    <div className="mt-2 grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
-                      <Metric name="Clarity" value={review.clarity} />
-                      <Metric
-                        name="Responsiveness"
-                        value={review.responsiveness}
-                      />
-                      <Metric name="Fairness" value={review.fairness} />
-                      <Metric name="Workload" value={review.workload} />
+                    <p className="mt-1 text-xs text-[#6B7280]">{review.rating_version === 1 ? "Legacy ratings" : "Current ratings"}</p>
+                    <div className="mt-2 grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-3">
+                      {reviewMetrics(review).map(({ label, score }) => <Metric key={label} name={label} value={score} />)}
                     </div>
 
                     {review.description ? (

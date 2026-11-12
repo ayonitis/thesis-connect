@@ -40,7 +40,7 @@ function client(options = {}) {
       async exchangeCodeForSession() { calls.exchange++; if(options.exchangeThrow) throw Error('private'); if(!options.exchangeError) session={access_token:'new-flow-session'}; return { data:{session:options.exchangeError?null:session}, error: options.exchangeError ? {} : null }; },
       async verifyOtp() { calls.otp++; if(!options.otpError) session={access_token:'new-flow-session'}; return { data:{session:options.otpError?null:session}, error: options.otpError ? {} : null }; },
     },
-    async rpc(name) { calls.rpc.push(name); if(options.rpcThrow) throw Error('private'); return { data: Object.hasOwn(options, 'eligible') ? options.eligible : true, error: options.rpcError ? { message: 'private' } : null }; },
+    async rpc(name) { calls.rpc.push(name); if(options.rpcThrow) throw Error('private'); return { data: name === 'is_admin' ? (options.admin ?? false) : Object.hasOwn(options, 'eligible') ? options.eligible : true, error: options.rpcError ? { message: 'private' } : null }; },
     from(table) {
       calls.tables.push(table);
       const chain = { then(resolve) { return Promise.resolve({ data: [], error: null }).then(resolve); } };
@@ -123,7 +123,7 @@ test('Google initiation uses current app callback and no claimed domain security
 function callback(c){return load('src/app/auth/callback/route.ts',{'next/server':{NextResponse:{redirect:url=>({location:url.href})}},'@/lib/supabase/server':{createRouteClient:async()=>({supabase:c.api,assertCookiePersistence(){}})}}).GET;}
 test('actual callback allows eligible exchanged code',async()=>{const c=client();const result=await callback(c)({url:'http://test.invalid/auth/callback?code=synthetic&next=/partners/my-rooms'});assert.equal(result.location,'http://test.invalid/partners/my-rooms');assert.equal(c.calls.exchange,1);});
 for(const opts of [{eligible:false},{rpcThrow:true},{user:{...goodUser(),email:'x@other.test'}},{user:{...goodUser(),email_confirmed_at:null}},{exchangeError:true},{exchangeThrow:true},{eligible:false,cleanupThrow:true}]){
-  test('callback denies and attempts cleanup: '+JSON.stringify(opts),async()=>{const c=client(opts);const result=await callback(c)({url:'http://test.invalid/auth/callback?code=synthetic&next=/admin/faculty'});assert.ok(result.location.includes('/sign-in?error='));assert.equal(c.calls.cleanup,opts.exchangeError||opts.exchangeThrow?0:1);});
+  test('callback denies and attempts cleanup: '+JSON.stringify(opts),async()=>{const c=client(opts);const result=await callback(c)({url:'http://test.invalid/auth/callback?code=synthetic&next=/admin/faculty'});assert.ok(new URL(result.location).pathname === '/sign-in' && new URL(result.location).searchParams.has('error'));assert.equal(c.calls.cleanup,opts.exchangeError||opts.exchangeThrow?0:1);});
 }
 test('OTP confirmation and recovery branch uses eligibility',async()=>{
   for(const type of ['signup','recovery']){const c=client();const r=await callback(c)({url:'http://test.invalid/auth/callback?token_hash=synthetic&type='+type});assert.ok(r.location.includes(type==='recovery'?'/reset-password':'/verify-email?status=verified'));assert.equal(c.calls.otp,1);}
@@ -165,13 +165,104 @@ test('unknown profile state cannot pass profile-required proxy routes',async()=>
   const proxy=load('src/proxy.ts',{'next/server':{NextResponse:{redirect:url=>({location:url.href,cookies:{set(){}}})}},'@/lib/supabase/proxy':{updateSession:async()=>({response:{cookies:{getAll:()=>[]},headers:{get:()=>null}},user:goodUser(),eligible:true,profileStatus:'unknown'})}}).proxy;
   const result=await proxy({nextUrl:new URL('http://test.invalid/partners/create'),url:'http://test.invalid/partners/create'});assert.ok(result.location.includes('/profile/complete?next='));
 });
-test('all seven protected route groups install independent server layout',()=>{
-  for(const route of ['admin','profile/complete','faculty/post-review','faculty/[slug]/review','partners/create','partners/my-rooms','partners/[roomId]/join']) assert.ok(read('src/app/'+route+'/layout.tsx').includes('protected-brac-layout'));
+test('student route groups install independent server BRAC layouts',()=>{
+  for(const route of ['profile/complete','faculty/post-review','faculty/[slug]/review','partners/create','partners/my-rooms','partners/[roomId]/join']) assert.ok(read('src/app/'+route+'/layout.tsx').includes('protected-brac-layout'));
 });
 test('callback client construction failure denies without revealing exception',async()=>{
   const get=load('src/app/auth/callback/route.ts',{'next/server':{NextResponse:{redirect:url=>({location:url.href})}},'@/lib/supabase/server':{createRouteClient:async()=>{throw Error('private secret');}}}).GET;
   assert.equal((await get({url:'http://test.invalid/auth/callback?code=synthetic'})).location,'http://test.invalid/sign-in?error=brac_access_required');
 });
+
+test('admin callback accepts only the dedicated database authorization for admin destinations', async () => {
+  const user = {...goodUser(), email: 'ayon3015@gmail.com'};
+  const designated = client({user, admin: true});
+  const dest = 'https://test.invalid/auth/callback?code=synthetic&next=/admin';
+  assert.equal((await callback(designated)( {url: dest} )).location, 'https://test.invalid/admin');
+  assert.deepEqual(designated.calls.rpc, ['is_admin']);
+  for (const denied of [client(), client({user, admin: 'true'})]) {
+    assert.match((await callback(denied)({url: dest})).location, /error=admin_access_required/);
+    assert.equal(denied.calls.cleanup, 1);
+  }
+  const studentPath = dest.replace('next=/admin', 'next=/partners/my-rooms');
+  assert.match((await callback(client({user, admin: true}))({url: studentPath})).location, /brac_access_required/);
+});
+
+test('confirmed designated account retains the exchanged session while admin assignment is pending', async () => {
+  for (const next of ['/', '/admin/faculty']) {
+    const c = client({user: {...goodUser(), email: 'AYON3015@gmail.com'}, admin: false});
+    const result = await callback(c)({url: 'https://test.invalid/auth/callback?code=synthetic&next=' + next});
+    assert.equal(result.location, 'https://test.invalid/sign-in?next=/admin&status=admin_pending');
+    assert.deepEqual(c.calls.rpc, ['is_admin']);
+    assert.equal(c.calls.cleanup, 0);
+    assert.equal((await c.api.auth.getSession()).data.session.access_token, 'new-flow-session');
+  }
+});
+
+test('admin callback rejects unverified or different identities and does not retain a session on RPC error', async () => {
+  const user = {...goodUser(), email: 'ayon3015@gmail.com'};
+  for (const options of [
+    {user: {...user, email: 'ayon3015+test@gmail.com'}},
+    {user: {...user, email: 'other@gmail.com', user_metadata: {email: user.email}}},
+    {user: {...user, email_confirmed_at: null}},
+    {user: {...user, is_anonymous: true}},
+    {user, rpcError: true},
+  ]) {
+    const c = client(options);
+    const result = await callback(c)({url: 'https://test.invalid/auth/callback?code=synthetic&next=/'});
+    assert.match(result.location, /brac_access_required/);
+    assert.equal(c.calls.cleanup, 1);
+  }
+});
+
+test('admin server layout denies before rendering and accepts the database-verified admin', async () => {
+  const render = (c) => load('src/app/admin/layout.tsx', {
+    'next/navigation': {redirect: where => {throw Error(where);}},
+    '@/lib/supabase/server': {createClient: async () => c.api},
+    'react/jsx-runtime': {jsx: (_type, props) => props.children, Fragment: 'fragment'},
+  }).default({children: 'admin dashboard'});
+  for (const c of [client(), client({user: null}), client({user: {...goodUser(), email_confirmed_at: null}, admin: true})]) {
+    await assert.rejects(render(c), /admin_access_required/);
+  }
+  assert.equal(await render(client({user: {...goodUser(), email: 'ayon3015@gmail.com'}, admin: true})), 'admin dashboard');
+});
+
+test('admin data helpers never call a business RPC or a table for unprivileged users', async () => {
+  const admin = load('src/lib/data/admin.ts');
+  for (const fn of Object.values(admin)) {
+    const c = client();
+    await assert.rejects(fn(c.api, 'id', 'hidden'), /Administrator access is required/);
+    assert.deepEqual(c.calls.rpc, ['is_admin']);
+    assert.deepEqual(c.calls.tables, []);
+  }
+});
+
+test('designated admin migration uses a live session and leaves student policies and table grants alone', () => {
+  const sql = read('supabase/migrations/20261110130000_designated_admin.sql');
+  assert.match(sql, /r\.user_id = auth\.uid\(\) AND r\.role = 'admin'/);
+  assert.match(sql, /u\.email_confirmed_at IS NOT NULL\s+AND lower\(u\.email COLLATE "C"\) = 'ayon3015@gmail\.com'/);
+  assert.match(sql, /JOIN auth\.sessions AS s ON s\.user_id = u\.id/);
+  assert.doesNotMatch(sql, /(?:CREATE|ALTER|DROP) POLICY|GRANT\s+(?:SELECT|INSERT|UPDATE|DELETE)/);
+});
+
+const adminBanCases = [
+  ['no ban', null, true],
+  ['current ban', '2026-11-10T12:01:00Z', false],
+  ['expired ban', '2026-11-10T11:59:00Z', true],
+  ['ban expires at statement start', '2026-11-10T12:00:00Z', true],
+];
+for (const [label, bannedUntil, expected] of adminBanCases) {
+  test('designated admin runtime ban predicate: ' + label, () => {
+    const sql = read('supabase/migrations/20261110130000_designated_admin.sql');
+    const admin = sql.match(/CREATE OR REPLACE FUNCTION public\.is_admin\(\)[\s\S]*?\$admin\$;/);
+    assert.ok(admin);
+    assert.match(admin[0], /LANGUAGE sql STABLE SECURITY DEFINER\s+SET search_path = pg_catalog, pg_temp\s+SET row_security = off/);
+    assert.match(admin[0], /AND \(u\.banned_until IS NULL OR u\.banned_until <= statement_timestamp\(\)\)/);
+    assert.match(admin[0], /AND \(s\.not_after IS NULL OR s\.not_after > statement_timestamp\(\)\)/);
+    // Model the SQL predicate with all other admin guards satisfied. No SQL is executed.
+    const statementStart = Date.parse('2026-11-10T12:00:00Z');
+    assert.equal(bannedUntil === null || Date.parse(bannedUntil) <= statementStart, expected);
+  });
+}
 
 // Six draft-dependent assertions are preserved in tests/private/; see tests/README.md.
 
@@ -414,4 +505,115 @@ test('eligibility service errors do not blame the email or navigate into the app
   await handler('src/app/sign-in/page.tsx','handleEmailSignIn',f.scope)();
   assert.deepEqual(f.state.destinations,[]);assert.equal(c.calls.cleanup,1);
   assert.match(f.state.errors.at(-1),/temporarily unavailable/);
+});
+
+test('admin Add Faculty uses the guarded RPC and normalizes optional input', async () => {
+  const c = client({user: {...goodUser(), email: 'ayon3015@gmail.com'}, admin: true});
+  const rpc = c.api.rpc;
+  const requests = [];
+  c.api.rpc = async (name, args) => {
+    if (name === 'admin_add_faculty') requests.push(args);
+    return rpc(name, args);
+  };
+  const {addFaculty} = load('src/lib/data/admin.ts');
+  const input = {name: '  Example Faculty  ', department: 'CSE', designation: ' Lecturer ', email: ' ', summaryNote: ' A note '};
+  await addFaculty(c.api, input);
+  assert.deepEqual(c.calls.rpc, ['is_admin', 'admin_add_faculty']);
+  assert.deepEqual({...requests[0]}, {
+    p_name: 'Example Faculty', p_department: 'CSE', p_designation: 'Lecturer', p_email: null, p_summary_note: 'A note',
+  });
+  assert.deepEqual(c.calls.tables, []);
+
+  c.api.rpc = (name, args) => name === 'admin_add_faculty'
+    ? Promise.resolve({error: {code: '23505', message: 'raw database detail'}})
+    : rpc(name, args);
+  await assert.rejects(addFaculty(c.api, input), /already exists in that department/);
+});
+
+test('Add Faculty migration relies on existing duplicate protection and leaves public email projection alone', () => {
+  const sql = read('supabase/migrations/20261111120000_admin_add_faculty.sql');
+  const baseline = read('supabase/migrations/20261028190000_phase_2b_schema.sql');
+  assert.match(baseline, /create unique index faculty_unique_normalized_name_department_idx\s+on public\.faculty \(lower\(btrim\(name\)\), department\)/i);
+  assert.match(sql, /SECURITY DEFINER\s+SET search_path = pg_catalog, pg_temp/);
+  assert.match(sql, /IF public\.is_admin\(\) IS DISTINCT FROM true[\s\S]*?42501[\s\S]*?INSERT INTO public\.faculty/);
+  assert.match(sql, /FROM PUBLIC, anon, authenticated, service_role;[\s\S]*?GRANT EXECUTE[\s\S]*?TO authenticated;/);
+  assert.doesNotMatch(sql, /(?:CREATE|ALTER|DROP) (?:POLICY|VIEW)|ON CONFLICT/);
+});
+
+test('server profile renders the Admin Panel link only after database authorization', async () => {
+  const jsx = (type, props) => ({type, props});
+  const render = (c) => load('src/app/profile/page.tsx', {
+    'next/navigation': {redirect: where => {throw Error(where);}},
+    '@/lib/supabase/server': {createClient: async () => c.api},
+    '@/components/layout/footer': {Footer: 'Footer'},
+    '@/components/layout/page-header': {PageHeader: 'PageHeader'},
+    '@/components/profile/student-profile-form': {StudentProfileForm: 'StudentProfileForm'},
+    '@/components/ui/button': {LinkButton: 'LinkButton'},
+    'react/jsx-runtime': {jsx, jsxs: jsx},
+  }).default();
+  const admin = client({user: {...goodUser(), email: 'ayon3015@gmail.com'}, admin: true});
+  assert.match(JSON.stringify(await render(admin)), /"href":"\/admin".*"children":"Admin Panel"/);
+  assert.deepEqual(admin.calls.rpc, ['is_admin']);
+  const student = client();
+  assert.equal((await render(student)).type, 'StudentProfileForm');
+  const outsider = client({user: {...goodUser(), email: 'ayon3015@gmail.com'}});
+  await assert.rejects(render(outsider), /brac_access_required/);
+});
+
+test('an authorized non-BRAC admin can leave the dashboard and return with the same session', async () => {
+  const c = client({user: {...goodUser(), email: 'ayon3015@gmail.com'}, admin: true});
+  const routes = proxyForIdentity(c);
+  const layout = load('src/app/admin/layout.tsx', {
+    'next/navigation': {redirect: where => {throw Error(where);}},
+    '@/lib/supabase/server': {createClient: async () => c.api},
+    'react/jsx-runtime': {jsx: (_type, props) => props.children, Fragment: 'fragment'},
+  }).default;
+  for (const path of ['/admin', '/', '/profile', '/faculty', '/admin']) {
+    assert.equal((await routes.proxy(requestFor(path))).kind, 'next', path);
+    if (path === '/admin') assert.equal(await layout({children:'dashboard'}), 'dashboard');
+  }
+  assert.equal((await routes.proxy(requestFor('/profile/complete'))).kind, 'redirect');
+  assert.equal((await routes.proxy(requestFor('/partners/create'))).kind, 'redirect');
+  assert.equal((await c.api.auth.getSession()).data.session.access_token, 'existing-session');
+  assert.equal(c.calls.cleanup, 0);
+});
+
+test('faculty deletion requires admin and reports foreign-key blockers without raw details', async () => {
+  const {deleteFaculty} = load('src/lib/data/admin.ts');
+  const ordinary = client();
+  await assert.rejects(deleteFaculty(ordinary.api, 'fixture-id'), /Administrator access/);
+  assert.deepEqual(ordinary.calls.rpc, ['is_admin']);
+
+  const admin = client({admin: true});
+  const original = admin.api.rpc;
+  admin.api.rpc = async (name, args) => {
+    if (name === 'admin_delete_faculty') {
+      assert.equal(args.p_faculty_id, 'fixture-id');
+      return {error: {code:'23503', message:'private database detail'}};
+    }
+    return original(name, args);
+  };
+  await assert.rejects(deleteFaculty(admin.api, 'fixture-id'), /cannot be deleted because reviews/);
+});
+
+test('faculty delete RPC scopes deletion to one ID and logs only public identifiers', () => {
+  const sql = read('supabase/migrations/20261111130000_admin_delete_faculty.sql');
+  assert.match(sql, /SECURITY DEFINER\s+SET search_path = pg_catalog, pg_temp/);
+  assert.match(sql, /IF public\.is_admin\(\) IS DISTINCT FROM true[\s\S]*?42501[\s\S]*?DELETE FROM public\.faculty\s+WHERE id = p_faculty_id/);
+  assert.match(sql, /INSERT INTO public\.moderation_log[\s\S]*?jsonb_build_object\('name', v_name, 'department', v_department, 'slug', v_slug\)/);
+  assert.match(sql, /FROM PUBLIC, anon, authenticated, service_role;\s+GRANT EXECUTE[\s\S]*?TO authenticated;/);
+  assert.equal((sql.match(/\bDELETE FROM\b/g) ?? []).length, 1);
+  assert.doesNotMatch(sql, /\b(?:ALTER TABLE|CASCADE)\b/);
+});
+
+test('admin dashboard and adapter have no room controls or room RPCs', () => {
+  const dashboard = read('src/components/admin/admin-dashboard.tsx');
+  const adapter = read('src/lib/data/admin.ts');
+  assert.doesNotMatch(dashboard, /room/i);
+  assert.doesNotMatch(adapter, /room/i);
+  assert.doesNotMatch(adapter, /\.\.\.dashboard\.data/);
+  for (const name of ['addFaculty', 'deleteFaculty', 'decideFacultyAddRequest', 'moderateFacultyReview', 'reviewMetrics']) {
+    assert.ok(dashboard.includes(name), name);
+  }
+  assert.match(adapter, /await requireAdmin\(supabase\)/);
 });

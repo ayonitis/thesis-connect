@@ -11,7 +11,7 @@ import {
   type FacultyWithReviews,
 } from "@/lib/data/faculty";
 import { createClient } from "@/lib/supabase/client";
-import { average } from "@/lib/review-utils";
+import { summarizeFacultyReviews } from "@/lib/faculty-review-ratings";
 
 export default function FacultyDirectoryPage() {
   const [query, setQuery] = useState("");
@@ -171,12 +171,7 @@ export default function FacultyDirectoryPage() {
               </div>
             ) : (
               filtered.map((item) => {
-                const allScores = item.reviews.flatMap((review) => [
-                  review.clarity,
-                  review.responsiveness,
-                  review.fairness,
-                  review.workload,
-                ]);
+                const summaries = summarizeFacultyReviews(item.reviews);
 
                 return (
                   <article
@@ -204,11 +199,11 @@ export default function FacultyDirectoryPage() {
                     ) : null}
 
                     {canViewReviews ? (
-                      <p className="mt-3 text-sm text-[#374151]">
-                        {allScores.length > 0
-                          ? `Overall rating: ${average(allScores).toFixed(1)} / 10`
-                          : "No published reviews yet."}
-                      </p>
+                      <div className="mt-3 space-y-1 text-sm text-[#374151]">
+                        {summaries.length ? summaries.map(({ version, overall, count }) => (
+                          <p key={version}>{version === 1 ? "Legacy rating" : "Current rating"}: {overall.toFixed(1)} / 10 ({count} reviews)</p>
+                        )) : <p>No published reviews yet.</p>}
+                      </div>
                     ) : null}
 
                     <LinkButton

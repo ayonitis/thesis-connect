@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 
 function queryErrorMessage(error: string | null, reason: string | null) {
   if (!error) return null;
+  if (error === "admin_access_required") return "Administrator access is required. Sign in with the designated account.";
   if (error === "brac_access_required") return BRAC_ACCESS_MESSAGE;
   if (error === "session_cleanup_failed") return "Sign out of this session, then try signing in again.";
 
@@ -45,6 +46,7 @@ export default function SignInPage() {
   const [queryError, setQueryError] = useState<string | null>(null);
   const [queryReason, setQueryReason] = useState<string | null>(null);
   const [canShowSignOut, setCanShowSignOut] = useState(false);
+  const [adminPending, setAdminPending] = useState(false);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +57,7 @@ export default function SignInPage() {
       setNextPath(getSafeInternalRedirectPath(search.get("next"), "/"));
       setQueryError(search.get("error"));
       setQueryReason(search.get("reason"));
+      setAdminPending(search.get("status") === "admin_pending");
     };
     const initialSync = window.setTimeout(syncSearch, 0);
     window.addEventListener("popstate", syncSearch);
@@ -196,6 +199,7 @@ export default function SignInPage() {
               />
             </label>
 
+            {adminPending ? <p role="status" className="text-sm text-[#475569]">Administrator access is pending. An operator must complete the account assignment before you can continue.</p> : null}
             {callbackError ? <p className="text-sm text-[#B42318]">{callbackError}</p> : null}
             {error ? <p className="text-sm text-[#B42318]">{error}</p> : null}
 

@@ -120,7 +120,7 @@ test('five profile inputs are required and the BRAC response is optional',()=>{
   assert.doesNotMatch(form,/detailsAvailable|profile-details-note|Additional profile details aren/);assert.match(form,/getCurrentStudentProfile/);
   assert.equal((form.match(/\brequired(?:\s|\s*\/?>)/g)||[]).length,5);assert.match(form,/saveCurrentStudentProfile/);
   assert.doesNotMatch(form, /localStorage|sessionStorage|type="email"|type="tel"|type="file"/);
-  assert.match(read('src/app/profile/layout.tsx'),/protected-brac-layout/);
+  assert.match(read('src/app/profile/page.tsx'),/await requireBracUser\(supabase\);/);
 });
 test('wordmark is not clipped and all three home panels use identical grey',()=>{
   const home=read('src/app/page.tsx');assert.doesNotMatch(home,/typing-track|tone=/);

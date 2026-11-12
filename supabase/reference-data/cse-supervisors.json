@@ -1,0 +1,1540 @@
+{
+  "source": "https://cse.bracu.ac.bd/thesis/supervising/list",
+  "sourceEntries": 254,
+  "uniqueNames": 252,
+  "missingSourceEmails": 0,
+  "faculty": [
+    {
+      "name": "Ahammod Munim Ramil",
+      "department": "CSE",
+      "designation": "Research Assistant",
+      "email": "munim.ramil@bracu.ac.bd"
+    },
+    {
+      "name": "Istiaq Ahmed Fahad",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ahmed.fahad@bracu.ac.bd"
+    },
+    {
+      "name": "Mollah Md Saif",
+      "department": "CSE",
+      "designation": "Research Assistant",
+      "email": "mollah.mdsaif@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Ishrak Ahsan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ishrak.ahsan@bracu.ac.bd"
+    },
+    {
+      "name": "Mahir Labib Dihan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "labib.mahir@bracu.ac.bd"
+    },
+    {
+      "name": "Sakib Anwar Rieyan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "sakib.rieyan@bracu.ac.bd"
+    },
+    {
+      "name": "Angkon Deb",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.angkon.deb@bracu.ac.bd"
+    },
+    {
+      "name": "Md Toky Tazwar",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.toky.tazwar@bracu.ac.bd"
+    },
+    {
+      "name": "Muhammad Abdur Rahman",
+      "department": "CSE",
+      "designation": "C. Senior Lecturer",
+      "email": "abdur.rahman@bracu.ac.bd"
+    },
+    {
+      "name": "Anika Afrin",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.anika.afrin@bracu.ac.bd"
+    },
+    {
+      "name": "Ayesha Siddika",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.ayesha.siddika@bracu.ac.bd"
+    },
+    {
+      "name": "Ahmed Akib Jawad Karim",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.akib.jawad@bracu.ac.bd"
+    },
+    {
+      "name": "Abdullah Khondoker",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.abdullah@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. MD FARDIN RAHMAN AMI",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.fardin.rahman@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Irtiza Hossain",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.irtiza.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Moinul Haque",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.moinul.haque@bracu.ac.bd"
+    },
+    {
+      "name": "MD ASIF",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.md.asif@bracu.ac.bd"
+    },
+    {
+      "name": "Monirul Haque",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.monirul.haque@bracu.ac.bd"
+    },
+    {
+      "name": "Mehnaz Ara Fazal",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.mehnaz.fazal@bracu.ac.bd"
+    },
+    {
+      "name": "Nafiz Imtiaz Rafin",
+      "department": "CSE",
+      "designation": null,
+      "email": null,
+      "conflictingListings": [
+        {
+          "sourceLinkId": 37,
+          "designation": "C. Lecturer"
+        },
+        {
+          "sourceLinkId": 270,
+          "designation": "Research Assistant"
+        }
+      ]
+    },
+    {
+      "name": "Maheer Helal",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.maheer.helal@bracu.ac.bd"
+    },
+    {
+      "name": "Md Shamsur Shafi Nur E Aziz",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.shamsur.aziz@bracu.ac.bd"
+    },
+    {
+      "name": "Rantu Das",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.rantu.das@bracu.ac.bd"
+    },
+    {
+      "name": "ANIKA ISLAM",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.anika.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Sajid Imam Mahir",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.sajid.mahir@bracu.ac.bd"
+    },
+    {
+      "name": "Tahsin Tanim Ramisha",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.tahsin.ramisha@bracu.ac.bd"
+    },
+    {
+      "name": "Tanjim Reza",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.tanjim.reza@bracu.ac.bd"
+    },
+    {
+      "name": "Md.Waseq Alauddin Alvi",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.waseq.alvi@bracu.ac.bd"
+    },
+    {
+      "name": "Aunon Halder",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.aunon.halder@bracu.ac.bd"
+    },
+    {
+      "name": "Nusrat Zaman Raya",
+      "department": "CSE",
+      "designation": "C. Lecturer",
+      "email": "ext.nusrat.raya@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Sadia Hamid Kazi",
+      "department": "CSE",
+      "designation": "Associate Professor & Chairperson",
+      "email": "skazi@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Mohammad Kaykobad",
+      "department": "CSE",
+      "designation": "Professor",
+      "email": "kaykobad@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Chowdhury Mofizur Rahman",
+      "department": "CSE",
+      "designation": "Professor",
+      "email": "rahman.mofizur@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Md. Khalilur Rahman",
+      "department": "CSE",
+      "designation": "Professor",
+      "email": "khalilur@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Md. Golam Rabiul Alam",
+      "department": "CSE",
+      "designation": "Professor",
+      "email": "rabiul.alam@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Md Sadek Ferdous",
+      "department": "CSE",
+      "designation": "Professor",
+      "email": "sadek.ferdous@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Amitabha Chakrabarty",
+      "department": "CSE",
+      "designation": "Professor",
+      "email": "amitabha@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Farida Chowdhury",
+      "department": "CSE",
+      "designation": "Professor",
+      "email": "farida.chowdhury@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Swakkhar Shatabda",
+      "department": "CSE",
+      "designation": "Professor",
+      "email": "swakkhar.shatabda@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Taiabul Haque",
+      "department": "CSE",
+      "designation": "Professor",
+      "email": "taiabul.haque@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Muhammad Nur Yanhaona",
+      "department": "CSE",
+      "designation": "Associate Professor",
+      "email": "nur.yanhaona@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Md. Ashraful Alam",
+      "department": "CSE",
+      "designation": "Associate Professor",
+      "email": "ashraful.alam@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Muhammad Iqbal Hossain",
+      "department": "CSE",
+      "designation": "Associate Professor",
+      "email": "iqbal.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Farig Yousuf Sadeque",
+      "department": "CSE",
+      "designation": "Associate Professor",
+      "email": "farig.sadeque@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Md. Sakir Hossain",
+      "department": "CSE",
+      "designation": "Associate Professor",
+      "email": "sakir.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Badhan Das",
+      "department": "CSE",
+      "designation": "Assistant Professor",
+      "email": "badhan.das@bracu.ac.bd"
+    },
+    {
+      "name": "Dr. Aniqua Nusrat Zereen",
+      "department": "CSE",
+      "designation": "Assistant Professor",
+      "email": "aniqua@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Annajiat Alim Rasel",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "annajiat@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Moin Mostakim",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "mostakim@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Saiful Islam",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "md.saiful.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Tawhid Anwar",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "tawhid.anwar@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Imran Bin Azad",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "imran.azad@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Rubayat Ahmed Khan",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "rubayat.ahmed@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Mehnaz Seraj",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "seraj.mehnaz@bracu.ac.bd"
+    },
+    {
+      "name": "Najeefa Nikhat Choudhury",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "najeefa.chy@bracu.ac.bd"
+    },
+    {
+      "name": "Mahrin Tasfe",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "mahrin.tasfe@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Md. Tanzim Reza",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "tanzim.reza@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Tasnim Ferdous",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "tasnim.ferdous@bracu.ac.bd"
+    },
+    {
+      "name": "Dewan Ziaul Karim",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "ziaul.karim@bracu.ac.bd"
+    },
+    {
+      "name": "Arif Shakil",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "arif.shakil@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Syed Zamil Hasan Shoumo",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "shoumo.hasan@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Rafeed Rahman",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "rahman.rafeed@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Saiful Bari Siddiqui",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "saiful.bari@bracu.ac.bd"
+    },
+    {
+      "name": "Niaz Ashraf Khan",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "niaz.ashraf@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Md. Aquib Azmain",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "aquib.azmain@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Sabbir Ahmed",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "sabbir.ahmed@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Dibyo Fabian Dofadar",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "fabian.dofadar@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Zaber Mohammad",
+      "department": "CSE",
+      "designation": "Senior Lecturer",
+      "email": "zaber.mohammad@bracu.ac.bd"
+    },
+    {
+      "name": "K. M. Azwad Hossain",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "azwad.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Md Mizanur Rahman Mustakim",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "mizanur.mustakim@bracu.ac.bd"
+    },
+    {
+      "name": "Md Arif Hasan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "arif.hasan@bracu.ac.bd"
+    },
+    {
+      "name": "Ashraful Islam Shanto Sikder",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ashraful.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Mohammad Naveed Hossain",
+      "department": "CSE",
+      "designation": null,
+      "email": null,
+      "conflictingListings": [
+        {
+          "sourceLinkId": 90,
+          "designation": "Lecturer"
+        },
+        {
+          "sourceLinkId": 247,
+          "designation": "Adjunct Lecturer"
+        }
+      ]
+    },
+    {
+      "name": "Farzana Reefat Raha",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "reefat.raha@bracu.ac.bd"
+    },
+    {
+      "name": "Rakib Kibria",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "rakib.kibria@bracu.ac.bd"
+    },
+    {
+      "name": "Nazmus Sakib Ahmed",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "nazmus.sakib@bracu.ac.bd"
+    },
+    {
+      "name": "Wahida Mahjabin",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "wahida.mahjabin@bracu.ac.bd"
+    },
+    {
+      "name": "Shoaib Ahmed Dipu",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "shoaib.ahmed@bracu.ac.bd"
+    },
+    {
+      "name": "Samiur Rahman",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "rahman.samiur@bracu.ac.bd"
+    },
+    {
+      "name": "Adrita Hossain Nakshi",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "adrita.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Ahmed Mahir Ruhan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ahmed.ruhan@bracu.ac.bd"
+    },
+    {
+      "name": "Bijoy Ahmed Saiem",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "bijoy.saiem@bracu.ac.bd"
+    },
+    {
+      "name": "Afroza Akther",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "afroza.akther@bracu.ac.bd"
+    },
+    {
+      "name": "Md Nafiu Rahman",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "nafiu.rahman@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Ankan Ghosh Dastider",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ankan.ghosh@bracu.ac.bd"
+    },
+    {
+      "name": "Nazmus Sakib Touhid",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "nazmus.touhid@bracu.ac.bd"
+    },
+    {
+      "name": "Aroni Ghosh",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "aroni.ghosh@bracu.ac.bd"
+    },
+    {
+      "name": "Ittehad Saleh Chowdhury",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ittehad.chowdhury@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Asif Haider",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "asif.haider@bracu.ac.bd"
+    },
+    {
+      "name": "Soumya Swagata Biswas",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "soumya.swagata@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Ahasanul Alam",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ahasanul.alam@bracu.ac.bd"
+    },
+    {
+      "name": "Md Abu Ibrahim ( Iqra )",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "abu.ibrahim@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Abid Jahan Apon",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "abid.jahan@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Abdullah Al Nakib",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "abdullah.alnakib@bracu.ac.bd"
+    },
+    {
+      "name": "Ahashan Habib Niloy",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ahashan.niloy@bracu.ac.bd"
+    },
+    {
+      "name": "Anika Priodorshinee Mrittika",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "anika.mrittika@bracu.ac.bd"
+    },
+    {
+      "name": "Aniqa Tabassum",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "aniqa.tabassum@bracu.ac.bd"
+    },
+    {
+      "name": "Ayman Rasheed",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ayman.rasheed@bracu.ac.bd"
+    },
+    {
+      "name": "Atanu Roy",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "atanu.roy@bracu.ac.bd"
+    },
+    {
+      "name": "Mohammed Ashfaqul Haque",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ashfaqul.haque@bracu.ac.bd"
+    },
+    {
+      "name": "Ateya Ahmed Subarna",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ateya.ahmed@bracu.ac.bd"
+    },
+    {
+      "name": "Faria Binta Awal",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "faria.awal@bracu.ac.bd"
+    },
+    {
+      "name": "Avinandan Banerjee",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "avinandan@bracu.ac.bd"
+    },
+    {
+      "name": "Ariyan Hossain",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ariyan.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Mohammad Badrul Hossain",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "badrul.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Ehtashamul Haque",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ehtashamul.haque@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Fatin Ishraq Faruqui",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "md.fatin@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Fakhruddin Gazzali",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "fakhruddin.gazzali@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Farhan Feroz",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "farhan.feroz@bracu.ac.bd"
+    },
+    {
+      "name": "Fatiha Ishrar Chowdhury",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "fatiha.ishrar@bracu.ac.bd"
+    },
+    {
+      "name": "Md Faisal Ahmed",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "faisal.ahmed@bracu.ac.bd"
+    },
+    {
+      "name": "Fardin Zubair Nafis",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "fardin.zubair@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Sheikh Araf Noshin",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "araf.noshin@bracu.ac.bd"
+    },
+    {
+      "name": "Tanhiat Fatema Afnan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "tanhiat.fatema@bracu.ac.bd"
+    },
+    {
+      "name": "Majisha Jahan Disha",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "majisha.jahan@bracu.ac.bd"
+    },
+    {
+      "name": "Ipshita Bonhi Upoma",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ipshita.upoma@bracu.ac.bd"
+    },
+    {
+      "name": "Abdullah Nayem Wasi Emran",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "abdullah.nayem@bracu.ac.bd"
+    },
+    {
+      "name": "Ahmad Farhan Shahriar Chowdhury",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "farhan.shahriar@bracu.ac.bd"
+    },
+    {
+      "name": "Imam Mohammad Zulkarnain",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "imam.mohammad@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Rifat Rahman",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "rifat.rahman@bracu.ac.bd"
+    },
+    {
+      "name": "Jawaril Munshad Abedin",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "jawaril.munshad@bracu.ac.bd"
+    },
+    {
+      "name": "Asif Hasan Chowdhury",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "asif.hasan@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Zulkar Naim",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "zulkar.naim@bracu.ac.bd"
+    },
+    {
+      "name": "Jishnu Mahmud",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "jishnu.mahmud@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Khaliduzzaman Khan Samrat",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "md.khaliduzzaman@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Khondoker Nazia Iqbal",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "nazia.iqbal@bracu.ac.bd"
+    },
+    {
+      "name": "Kazi Kamruzzaman Rabbi",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "kazi.kamruzzaman@bracu.ac.bd"
+    },
+    {
+      "name": "Labib Hasan Khan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "labib.hasan@bracu.ac.bd"
+    },
+    {
+      "name": "Marshia Nujhat",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "marshia.nujhat@bracu.ac.bd"
+    },
+    {
+      "name": "Mohammad Fahim",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "mohammad.fahim@bracu.ac.bd"
+    },
+    {
+      "name": "Mehedi Hasan Emo",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "mehedi.emo@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Jahin Alam",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "jahin.alam@bracu.ac.bd"
+    },
+    {
+      "name": "Anindita Labonno",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "anindita.labonno@bracu.ac.bd"
+    },
+    {
+      "name": "Meem Arafat Manab",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "meem.arafat@bracu.ac.bd"
+    },
+    {
+      "name": "Mushfique Nasir Probor",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "mushfique.nasir@bracu.ac.bd"
+    },
+    {
+      "name": "Mohammad Nuwaisir Rahman",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "nuwaisir.rahman@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Moynul Asik Moni",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "moynul.moni@bracu.ac.bd"
+    },
+    {
+      "name": "Mir Sayeed Mohammad",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "sayeed.mohammad@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Md. Shamim Mia",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "shamim.mia@bracu.ac.bd"
+    },
+    {
+      "name": "Abu Obaida Hasme",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "abu.hasme@bracu.ac.bd"
+    },
+    {
+      "name": "A B M Muntasir Rahman",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "abm.muntasir@bracu.ac.bd"
+    },
+    {
+      "name": "Munshi Sanowar Raihan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "munshi.sanowar@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Mohammad Zahidul Hasan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "zadid.hasan@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. A.T.M Mizanur Rahman",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "atm.mizanur@bracu.ac.bd"
+    },
+    {
+      "name": "NIRJHOR DATTA",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "nirjhor.datta@bracu.ac.bd"
+    },
+    {
+      "name": "Niloy Farhan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "niloy.farhan@bracu.ac.bd"
+    },
+    {
+      "name": "Niloy Irtisam",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "niloy.irtisam@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Narzu Tarannum",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "narzu.tarannum@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Nabuat Zaman Nahim",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "nabuat.zaman@bracu.ac.bd"
+    },
+    {
+      "name": "Nazmul Islam",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "nazmul.islam1@bracu.ac.bd"
+    },
+    {
+      "name": "Partha Bhoumik",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "partha.bhoumik@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Purbayan Das",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "purbayan.das@bracu.ac.bd"
+    },
+    {
+      "name": "Prantik Paul",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "prantik.paul@bracu.ac.bd"
+    },
+    {
+      "name": "Atonu Roy Chowdhury",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "atonuroy.chowdhury@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Priata Nowshin",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "priata.nowshin@bracu.ac.bd"
+    },
+    {
+      "name": "Prothito Shovon Majumder",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "prothito.shovon@bracu.ac.bd"
+    },
+    {
+      "name": "Quazi Shafayat Hossain",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "quazi.shafayat@bracu.ac.bd"
+    },
+    {
+      "name": "Quazi Ashikur Rahman",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "quazi.ashikur@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Riad Ahmed",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "riad.ahmed@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Rakin Bin Rabbani",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "rakin.rabbani@bracu.ac.bd"
+    },
+    {
+      "name": "Redowanul Akbar",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "redowanul.akbar@bracu.ac.bd"
+    },
+    {
+      "name": "Imran Zahid",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "imran.zahid@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Ruhan Islam",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ruhan.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Mohammad Rakibul Hasan Mahin",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "mohammad.rakibul@bracu.ac.bd"
+    },
+    {
+      "name": "Rafid Ahnaf",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "rafid.ahnaf@bracu.ac.bd"
+    },
+    {
+      "name": "Raisa Mashtura",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "raisa.mashtura@bracu.ac.bd"
+    },
+    {
+      "name": "Rafiad Sadat Shahir",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "rafiad.shahir@bracu.ac.bd"
+    },
+    {
+      "name": "Rifa Tasfiya",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "rifa.tasfiya@bracu.ac.bd"
+    },
+    {
+      "name": "Sadif Ahmed",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "sadif.ahmed@bracu.ac.bd"
+    },
+    {
+      "name": "Saadat Rafid Ahmed",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "saadat.ahmed@bracu.ac.bd"
+    },
+    {
+      "name": "Farhan Faruk",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "farhan.faruk@bracu.ac.bd"
+    },
+    {
+      "name": "Md Sabbir Hossain",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "sabbir.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Shayekh Bin Islam",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "shayekh.bin.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Md Saif Mokarrom",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "saif.mokarrom@bracu.ac.bd"
+    },
+    {
+      "name": "S. M. FARAH AL FAHIM",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "farah.fahim@bracu.ac.bd"
+    },
+    {
+      "name": "K. M. Shadman Wadith",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "shadman.wadith@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Shahriar Rahman Rana",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "shahriar.rahman@bracu.ac.bd"
+    },
+    {
+      "name": "Sahib Kowsar",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "sahib.kowsar@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Hamim Ibne Nasim",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "hamim.nasim@bracu.ac.bd"
+    },
+    {
+      "name": "Sihat Afnan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "sihat.afnan@bracu.ac.bd"
+    },
+    {
+      "name": "Sukarna Sarker",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "sukarna.sarkar@bracu.ac.bd"
+    },
+    {
+      "name": "Swattic Ghose",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "swattic.ghose@bracu.ac.bd"
+    },
+    {
+      "name": "Showvik Biswas",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "showvik.biswas@bracu.ac.bd"
+    },
+    {
+      "name": "Sazzadul Islam",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "sazzadul.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Tasnim Ahsan Prome",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "tasnim.ahsan@bracu.ac.bd"
+    },
+    {
+      "name": "Tarvir Anjum Aditto",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "tarvir.anjum@bracu.ac.bd"
+    },
+    {
+      "name": "Mohammad Tahsin Alam",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "tahsin.alam@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Tamkin Mahmud Tan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "tamkin.mahmud@bracu.ac.bd"
+    },
+    {
+      "name": "Tanvir Muntakim Tonoy",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "tanvir.muntakim@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Tawsif Shahriar Dipto",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "tawsif.shahriar@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Kefaya Benta Shahnoor",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "kefaya.shahnoor@bracu.ac.bd"
+    },
+    {
+      "name": "Towshik Anam Taj",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "towshik.taj@bracu.ac.bd"
+    },
+    {
+      "name": "Umme Jannat Taposhi",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "jannat.taposhi@bracu.ac.bd"
+    },
+    {
+      "name": "Tasneem Mazhar",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "tasneem.mazhar@bracu.ac.bd"
+    },
+    {
+      "name": "Utsab Saha",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "utsab.saha@bracu.ac.bd"
+    },
+    {
+      "name": "Warida Rashid",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "warida.rashid@bracu.ac.bd"
+    },
+    {
+      "name": "Yeasin Arafat Pritom",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "yeasin.pritom@bracu.ac.bd"
+    },
+    {
+      "name": "Yasmin Nadia",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "yasmin.nadia@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Zarin Tasnim Biash",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "zarin.tasnim.biash@bracu.ac.bd"
+    },
+    {
+      "name": "Zayed Humayun",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "zayed.humayun@bracu.ac.bd"
+    },
+    {
+      "name": "Ihzaz Abrar Sadik",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ihzaz.sadik@bracu.ac.bd"
+    },
+    {
+      "name": "Mirza Abdullah Al Noman",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "mirza.abdullah@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Muhtasim Mahmud",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "muhtasim.mahmud@bracu.ac.bd"
+    },
+    {
+      "name": "Ahmed Mayeesha Reza Agomoni",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "ahmed.mayeesha@bracu.ac.bd"
+    },
+    {
+      "name": "Maazin Munawar",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "maazin.munawar@bracu.ac.bd"
+    },
+    {
+      "name": "Naima Tahsin Nodi",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "naima.tahsin@bracu.ac.bd"
+    },
+    {
+      "name": "Pollock Nag",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "pollock.nag@bracu.ac.bd"
+    },
+    {
+      "name": "Riazul Islam Rifat",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "riazul.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Sanjida Tasnim",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "sanjida.tasnim@bracu.ac.bd"
+    },
+    {
+      "name": "Nafis Faisal",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "nafis.faisal@bracu.ac.bd"
+    },
+    {
+      "name": "Waleed Bin Habib Khan",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "waleed.habib@bracu.ac.bd"
+    },
+    {
+      "name": "Anika Ahmed",
+      "department": "CSE",
+      "designation": "Lecturer",
+      "email": "anika.ahmed@bracu.ac.bd"
+    },
+    {
+      "name": "Ahmad Al Asad",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.ahmad.asad@bracu.ac.bd"
+    },
+    {
+      "name": "Adrita Anwar",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.adrita.anwar@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Aiman Jabeen Ramisa",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.aiman.ramisa@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Anika Tasnim",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.anika.tasnim@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Anonto Shuvo",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.anonto.shuvo@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. ABU RAIHAN SHAKIL",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.abu.raihan@bracu.ac.bd"
+    },
+    {
+      "name": "A S M Nasim Khan",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.nasim.khan@bracu.ac.bd"
+    },
+    {
+      "name": "Shihab Muhtasim",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.shihab.muhtasim@bracu.ac.bd"
+    },
+    {
+      "name": "Joya Akter",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.joya.akter@bracu.ac.bd"
+    },
+    {
+      "name": "Kaji Sajjad Hossain",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.sajjad.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Nafis Chowdhury",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.nafis.chowdhury@bracu.ac.bd"
+    },
+    {
+      "name": "Mohammad Abdul Ahad",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.mohammad.abdul@bracu.ac.bd"
+    },
+    {
+      "name": "Sadman Sharif",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.sadman.sharif@bracu.ac.bd"
+    },
+    {
+      "name": "Sadman Sakib Alif",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.sadman.alif@bracu.ac.bd"
+    },
+    {
+      "name": "MD Ajmain Mahtab",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.ajmain.mahtab@bracu.ac.bd"
+    },
+    {
+      "name": "Mostofa Kamal Sagor",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.mostofa.kamal@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Md. Mahedi Hassan",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.mahedi.hassan@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Mehran Hossain",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.mehran.hossain@bracu.ac.bd"
+    },
+    {
+      "name": "Ayon Roy",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.ayon.roy@bracu.ac.bd"
+    },
+    {
+      "name": "Mohammad Sayeem Sadat Hossain",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.mohammad.sayeem@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Mustakin Alam",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.md.mustakin@bracu.ac.bd"
+    },
+    {
+      "name": "Fardeen Bin Ibrahim",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.fardeen.ibrahim@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Nishat Nayla",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.nishat.nayla@bracu.ac.bd"
+    },
+    {
+      "name": "Nowshin Tabassum",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.nowshin.tabassum@bracu.ac.bd"
+    },
+    {
+      "name": "Qurratul Ayen Elma",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.qurratul.elma@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Rabiul Islam Khan",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.rabiul.khan@bracu.ac.bd"
+    },
+    {
+      "name": "Farah Binta Haque",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.farah.haque@bracu.ac.bd"
+    },
+    {
+      "name": "Ramisa Fariha Joyee",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.ramisa.joyee@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Sameha Kamrul",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.sameha.kamrul@bracu.ac.bd"
+    },
+    {
+      "name": "Masuk Ridwan Saumo",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.masuk.saumo@bracu.ac.bd"
+    },
+    {
+      "name": "Sriman Bidhan Baray",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.bidhan.baray@bracu.ac.bd"
+    },
+    {
+      "name": "Mr. Sifat Tanvir",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.sifat.tanvir@bracu.ac.bd"
+    },
+    {
+      "name": "Tasnia Juha",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.tasnia.juha@bracu.ac.bd"
+    },
+    {
+      "name": "Ms. Zarin Tahia Hossain",
+      "department": "CSE",
+      "designation": "Adjunct Lecturer",
+      "email": "ext.zarin.tahia@bracu.ac.bd"
+    },
+    {
+      "name": "MD. Atiq Mahbub",
+      "department": "CSE",
+      "designation": "Research Assistant",
+      "email": "atiq.mahbub@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Alvi Islam Ratul",
+      "department": "CSE",
+      "designation": "Research Assistant",
+      "email": "alvi.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Md. Farhadul Islam",
+      "department": "CSE",
+      "designation": "Research Assistant",
+      "email": "farhadul.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Fahim-Ul-Islam",
+      "department": "CSE",
+      "designation": "Research Assistant",
+      "email": "fahim.islam@bracu.ac.bd"
+    },
+    {
+      "name": "Md Ishmam Tasin",
+      "department": "CSE",
+      "designation": "Research Assistant",
+      "email": "ishmam.tasin@bracu.ac.bd"
+    },
+    {
+      "name": "Pratyasha Saha",
+      "department": "CSE",
+      "designation": "Research Assistant",
+      "email": "pratyasha.saha@bracu.ac.bd"
+    }
+  ]
+}
