@@ -80,7 +80,7 @@ export async function proxy(request: NextRequest) {
 
   const onboardingExempt = pathname === "/profile" || pathname.startsWith("/profile/")
     || pathname.startsWith("/auth/")
-    || ["/sign-in", "/sign-up", "/verify-email", "/forgot-password", "/reset-password", "/privacy", "/community-guidelines", "/about"].includes(pathname);
+    || ["/sign-in", "/sign-up", "/verify-email", "/forgot-password", "/reset-password", "/privacy", "/community-guidelines", "/about", "/how-to-use", "/guidelines-privacy"].includes(pathname);
   if (user && eligible && profileStatus === "incomplete" && !onboardingExempt) {
     const setup = new URL("/profile/complete", request.url);
     setup.searchParams.set("next", `${pathname}${search}`);
