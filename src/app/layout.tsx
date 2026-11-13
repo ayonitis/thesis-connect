@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const inter = localFont({
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className={`${inter.variable} ${sourceSerif.variable} bg-[#FFFFFF] text-[#191C21] antialiased`}>
         <div className="tc-app-background">{children}</div>
+        <SpeedInsights />
       </body>
     </html>
   );
