@@ -95,8 +95,10 @@ export type HostedRoomDashboard = HostedPartnerRoom & {
   memberCount: number;
   remainingCapacity: number;
   pendingApplications: HostedRoomApplication[];
+  decidedApplications: HostedRoomApplication[];
   acceptedMembers: Array<
     AcceptedRoomMembership & {
+      contactLink: string | null;
       applicantDisplayName: string | null;
       department: DepartmentValue | null;
     }
@@ -232,6 +234,21 @@ export async function createPartnerRoom(
   }
 
   return data;
+}
+
+export async function isOwnPartnerRoom(
+  supabase: SupabaseClient,
+  roomId: string,
+): Promise<boolean> {
+  const user = await requireBracUser(supabase);
+  const { data, error } = await supabase
+    .from("partner_rooms")
+    .select("id")
+    .eq("id", roomId)
+    .eq("host_user_id", user.id)
+    .maybeSingle();
+  if (error) throwSafeDataError(error);
+  return data !== null;
 }
 
 /** Returns the UUID of the newly-created room_join_applications record. */
@@ -467,6 +484,20 @@ export async function listHostedRoomDashboards(
       const applicationsById = new Map(
         applications.map((application) => [application.id, application]),
       );
+      const acceptedIds = memberships.map(({ applicationId }) => applicationId);
+      const contacts = acceptedIds.length
+        ? await supabase.from("room_application_private_details")
+            .select("application_id, contact_link").in("application_id", acceptedIds)
+        : null;
+      if (contacts?.error) throwSafeDataError(contacts.error);
+      const links = new Map((contacts?.data ?? []).map(({ application_id, contact_link }) => {
+        try {
+          const url = new URL(contact_link);
+          return [application_id, ["http:", "https:"].includes(url.protocol) ? url.href : null];
+        } catch {
+          return [application_id, null];
+        }
+      }));
       const memberCount = memberships.length + 1;
 
       return {
@@ -476,6 +507,7 @@ export async function listHostedRoomDashboards(
           room.additionalMembersNeeded - Math.max(memberCount - 1, 0),
           0,
         ),
+        decidedApplications: applications.filter(({ status }) => status === "accepted" || status === "rejected"),
         pendingApplications: applications.filter(
           (application) => application.status === "pending",
         ),
@@ -484,6 +516,7 @@ export async function listHostedRoomDashboards(
 
           return {
             ...membership,
+            contactLink: links.get(membership.applicationId) ?? null,
             applicantDisplayName: application?.applicantDisplayName ?? null,
             department: application?.department ?? null,
           };

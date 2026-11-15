@@ -1,7 +1,10 @@
-import type { PublicPartnerRoom } from "@/lib/data/partner-rooms";
+import type { PublicPartnerRoom, RoomApplicationStatus } from "@/lib/data/partner-rooms";
 import { LinkButton } from "@/components/ui/button";
 
-export function PartnerRoomCard({ room }: { room: PublicPartnerRoom }) {
+export function PartnerRoomCard({ room, applicationStatus, hosted, canRequest }: { room: PublicPartnerRoom; applicationStatus?: RoomApplicationStatus; hosted?: boolean; canRequest?: boolean }) {
+  const acceptedParticipants = Math.max(room.memberCount - 1, 0);
+  const remaining = Math.max(room.additionalMembersNeeded - acceptedParticipants, 0);
+
   return (
     <article className="relative rounded-2xl border border-[#DCE0E6] bg-white p-5 shadow-[0_6px_20px_rgba(16,24,40,0.05)]">
       <div className="flex items-start justify-between gap-4">
@@ -37,11 +40,19 @@ export function PartnerRoomCard({ room }: { room: PublicPartnerRoom }) {
         </ul>
       </section>
 
-      <div className="mt-5 flex items-end justify-between gap-4">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
         <LinkButton href={`/partners/${room.id}`} variant="lightBlue">
           View room details
         </LinkButton>
-        <p className="text-xs font-semibold tracking-[0.02em] text-[#485362]">Looking for {room.additionalMembersNeeded} members</p>
+        <div className="text-xs text-[#485362]">
+          <p>Accepted Participants: {acceptedParticipants}</p>
+          <p>Additional Members Remaining: {remaining}</p>
+        </div>
+        {hosted ? <span>Your Room</span> : applicationStatus ? (
+          <span aria-disabled="true" className={applicationStatus === "accepted" ? "rounded px-2 py-1 bg-green-100 text-green-900" : applicationStatus === "rejected" ? "rounded px-2 py-1 bg-red-100 text-red-900" : "rounded px-2 py-1 bg-amber-100 text-amber-900"}>
+            {applicationStatus === "accepted" ? "Accepted" : applicationStatus === "rejected" ? "Rejected" : applicationStatus === "withdrawn" ? "Withdrawn" : "Pending"}
+          </span>
+        ) : canRequest && remaining > 0 ? <LinkButton href={`/partners/${room.id}/join`} variant="lightBlue">Request to Join</LinkButton> : null}
       </div>
     </article>
   );

@@ -7,14 +7,17 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button, LinkButton } from "@/components/ui/button";
 import {
   getPublicPartnerRoomById,
+  isOwnPartnerRoom,
   type PublicPartnerRoom,
 } from "@/lib/data/partner-rooms";
+import { BracEligibilityError } from "@/lib/auth/require-brac-user";
 import { createClient } from "@/lib/supabase/client";
 
 export default function PartnerRoomDetailsPage() {
   const params = useParams<{ roomId: string }>();
   const roomId = params.roomId;
   const [room, setRoom] = useState<PublicPartnerRoom | null>(null);
+  const [ownedRoomId, setOwnedRoomId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -22,12 +25,15 @@ export default function PartnerRoomDetailsPage() {
     let active = true;
 
     async function loadInitialRoom() {
+      setIsLoading(true);
       try {
         const supabase = createClient();
         const publicRoom = await getPublicPartnerRoomById(supabase, roomId);
 
+        const owned = publicRoom && await checkRoomOwnership(supabase, publicRoom.id);
         if (!active) return;
 
+        setOwnedRoomId(owned ? publicRoom.id : null);
         setRoom(publicRoom);
         setLoadError(null);
       } catch (error) {
@@ -57,7 +63,11 @@ export default function PartnerRoomDetailsPage() {
     setLoadError(null);
 
     try {
-      setRoom(await getPublicPartnerRoomById(createClient(), roomId));
+      const supabase = createClient();
+      const publicRoom = await getPublicPartnerRoomById(supabase, roomId);
+      const owned = publicRoom && await checkRoomOwnership(supabase, publicRoom.id);
+      setOwnedRoomId(owned ? publicRoom.id : null);
+      setRoom(publicRoom);
     } catch (error) {
       setLoadError(
         error instanceof Error ? error.message : "Unable to load this partner room.",
@@ -161,7 +171,11 @@ export default function PartnerRoomDetailsPage() {
                 <p className="font-semibold">Available additional places: {availableAdditionalPlaces}</p>
                 <p className="mt-1 text-xs text-[#5B6472]">{room.memberCount} current memberships, including the host.</p>
               </div>
-              {availableAdditionalPlaces > 0 ? (
+              {ownedRoomId === room.id ? (
+                <span className="rounded-full border border-[#DDE2E9] bg-[#F7F8FA] px-3 py-1 text-xs font-semibold text-[#324053]">
+                  Your Room
+                </span>
+              ) : availableAdditionalPlaces > 0 ? (
                 <LinkButton href={`/partners/${room.id}/join`} variant="primary">
                   Request to Join
                 </LinkButton>
@@ -179,6 +193,15 @@ export default function PartnerRoomDetailsPage() {
       <Footer />
     </div>
   );
+}
+
+async function checkRoomOwnership(supabase: ReturnType<typeof createClient>, roomId: string) {
+  try {
+    return await isOwnPartnerRoom(supabase, roomId);
+  } catch (error) {
+    if (error instanceof BracEligibilityError) return false;
+    throw error;
+  }
 }
 
 function Info({ label, value }: { label: string; value: string }) {
