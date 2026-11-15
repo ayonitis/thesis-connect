@@ -269,7 +269,14 @@ export default function MyRoomsPage() {
                   </div>
 
                   <div className="mt-6 border-t border-[#E8EBEF] pt-5">
-                    <h3 className="text-lg font-semibold text-[#1F2937]">Accepted members</h3>
+                    <h3 className="text-lg font-semibold text-[#1F2937]">Application decisions</h3>
+                    {room.decidedApplications.map((application) => (
+                      <div key={application.id} className="mt-2 text-sm">
+                        <p>{application.applicantDisplayName} · <span className={application.status === "accepted" ? "text-green-800" : "text-red-800"}>{application.status === "accepted" ? "Accepted" : "Rejected"}</span></p>
+                        <p>{application.whyJoin}</p>
+                      </div>
+                    ))}
+                    <h3 className="mt-5 text-lg font-semibold text-[#1F2937]">Accepted members</h3>
                     {room.acceptedMembers.length === 0 ? (
                       <p className="mt-3 text-sm text-[#5B6472]">No accepted members yet.</p>
                     ) : (
@@ -277,6 +284,7 @@ export default function MyRoomsPage() {
                         {room.acceptedMembers.map((member) => (
                           <li key={member.id} className="rounded-xl border border-[#E0E2E6] bg-[#FBFCFD] p-3">
                             <span className="font-medium">{member.applicantDisplayName ?? "Accepted member"}</span>
+                            {member.contactLink ? <a className="ml-2 text-blue-700 underline" href={member.contactLink} target="_blank" rel="noopener noreferrer">Contact link</a> : null}
                             {member.department ? <span className="text-[#5B6472]"> · {member.department}</span> : null}
                           </li>
                         ))}

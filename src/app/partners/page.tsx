@@ -7,6 +7,7 @@ import { PartnerRoomCard } from "@/components/partners/partner-room-card";
 import { Button, LinkButton } from "@/components/ui/button";
 import {
   listPublicPartnerRooms,
+  type RoomApplicationStatus,
   type PublicPartnerRoom,
 } from "@/lib/data/partner-rooms";
 import { DEPARTMENTS } from "@/lib/departments";
@@ -25,24 +26,52 @@ export default function PartnerDirectoryPage() {
   const [cgpaThreshold, setCgpaThreshold] = useState("");
   const [department, setDepartment] = useState("all");
   const [sorting, setSorting] = useState<"newest" | "oldest">("newest");
+  const [viewer, setViewer] = useState<{ hosted: string[]; statuses: Partial<Record<string, RoomApplicationStatus>> } | null>(null);
   const [rooms, setRooms] = useState<PublicPartnerRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  const [reload, setReload] = useState(0);
+
   useEffect(() => {
     let active = true;
+    let generation = 0;
 
     async function loadInitialRooms() {
+      const request = ++generation;
       try {
         const supabase = createClient();
         const publicRooms = await listPublicPartnerRooms(supabase);
 
-        if (!active) return;
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        let viewerData: typeof viewer = authError && authError.name !== "AuthSessionMissingError"
+          ? null : { hosted: [], statuses: {} };
+        if (user && !authError && viewerData) {
+          // Scope both lookups to the displayed rooms so unrelated history cannot
+          // consume the API row limit. Each room has at most one row per lookup.
+          for (let start = 0; start < publicRooms.length; start += 100) {
+            const ids = publicRooms.slice(start, start + 100).map(({ id }) => id);
+            const [hosted, applications] = await Promise.all([
+              supabase.from("partner_rooms").select("id").eq("host_user_id", user.id).in("id", ids),
+              supabase.from("room_join_applications").select("room_id,status").eq("applicant_user_id", user.id).in("room_id", ids),
+            ]);
+            if (hosted.error || applications.error) {
+              viewerData = null;
+              break;
+            }
+            viewerData.hosted.push(...hosted.data.map(({ id }) => id));
+            for (const { room_id, status } of applications.data) {
+              viewerData.statuses[room_id] = status;
+            }
+          }
+        }
+        if (!active || request !== generation) return;
+        setViewer(viewerData);
 
         setRooms(publicRooms);
         setLoadError(null);
       } catch (error) {
-        if (!active) return;
+        if (!active || request !== generation) return;
 
         setLoadError(
           error instanceof Error
@@ -50,36 +79,27 @@ export default function PartnerDirectoryPage() {
             : "Unable to load partner rooms.",
         );
       } finally {
-        if (active) {
+        if (active && request === generation) {
           setIsLoading(false);
         }
       }
     }
 
-    void loadInitialRooms();
+    const refreshRooms = () => { void loadInitialRooms(); };
+    refreshRooms();
+    window.addEventListener("focus", refreshRooms);
 
     return () => {
       active = false;
+      window.removeEventListener("focus", refreshRooms);
     };
-  }, []);
+  }, [reload]);
 
-  const retryLoadRooms = async () => {
+  function retryLoadRooms() {
     setIsLoading(true);
     setLoadError(null);
-
-    try {
-      const supabase = createClient();
-      setRooms(await listPublicPartnerRooms(supabase));
-    } catch (error) {
-      setLoadError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load partner rooms.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setReload((current) => current + 1);
+  }
 
   const filtered = useMemo(() => {
     const threshold = Number(cgpaThreshold);
@@ -184,7 +204,7 @@ export default function PartnerDirectoryPage() {
               <p className="mt-2 text-sm text-[#5B6472]">Try adjusting CGPA or department filters, or create a new room.</p>
             </div>
           ) : (
-            filtered.map((room) => <PartnerRoomCard key={room.id} room={room} />)
+            filtered.map((room) => <PartnerRoomCard key={room.id} room={room} applicationStatus={viewer?.statuses[room.id]} hosted={viewer?.hosted.includes(room.id)} canRequest={viewer !== null} />)
           )}
         </section>
 

@@ -248,8 +248,8 @@ export default function JoinRoomPage() {
               </Field>
 
               <div className="sm:col-span-2">
-                <Field label="Why do you want to join this room?" required error={errors.whyJoin}>
-                  <textarea className="tc-textarea min-h-28" value={form.whyJoin} onChange={(event) => setForm((previous) => ({ ...previous, whyJoin: event.target.value }))} />
+                <Field label="Additional Information" required error={errors.whyJoin} helper="Share a little about your academic interests and what you could bring to this research project. You can mention your research interests, completed additional courses, relevant skills, preferred research domains, or supervisors you're interested in.">
+                  <textarea className="tc-textarea min-h-64" placeholder="Example: I am interested in medical AI and have completed machine learning and statistics courses. I can help with Python and data analysis, and I would like to join to explore clinical applications with your team." value={form.whyJoin} onChange={(event) => setForm((previous) => ({ ...previous, whyJoin: event.target.value }))} />
                 </Field>
               </div>
 
