@@ -4,11 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Footer } from "@/components/layout/footer";
 import { PageHeader } from "@/components/layout/page-header";
+import { RoomApplicationStatusBadge } from "@/components/partners/partner-room-card";
 import { Button, LinkButton } from "@/components/ui/button";
 import {
+  getOwnRoomApplicationStatus,
   getPublicPartnerRoomById,
   isOwnPartnerRoom,
   type PublicPartnerRoom,
+  type RoomApplicationStatus,
 } from "@/lib/data/partner-rooms";
 import { BracEligibilityError } from "@/lib/auth/require-brac-user";
 import { createClient } from "@/lib/supabase/client";
@@ -17,7 +20,8 @@ export default function PartnerRoomDetailsPage() {
   const params = useParams<{ roomId: string }>();
   const roomId = params.roomId;
   const [room, setRoom] = useState<PublicPartnerRoom | null>(null);
-  const [ownedRoomId, setOwnedRoomId] = useState<string | null>(null);
+  const [viewer, setViewer] = useState<{ roomId: string; owned: boolean; status: RoomApplicationStatus | null } | null>(null);
+  const [retry, setRetry] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -30,10 +34,10 @@ export default function PartnerRoomDetailsPage() {
         const supabase = createClient();
         const publicRoom = await getPublicPartnerRoomById(supabase, roomId);
 
-        const owned = publicRoom && await checkRoomOwnership(supabase, publicRoom.id);
+        const roomViewer = publicRoom && await loadRoomViewer(supabase, publicRoom.id);
         if (!active) return;
 
-        setOwnedRoomId(owned ? publicRoom.id : null);
+        setViewer(roomViewer);
         setRoom(publicRoom);
         setLoadError(null);
       } catch (error) {
@@ -56,26 +60,7 @@ export default function PartnerRoomDetailsPage() {
     return () => {
       active = false;
     };
-  }, [roomId]);
-
-  const retryLoadRoom = async () => {
-    setIsLoading(true);
-    setLoadError(null);
-
-    try {
-      const supabase = createClient();
-      const publicRoom = await getPublicPartnerRoomById(supabase, roomId);
-      const owned = publicRoom && await checkRoomOwnership(supabase, publicRoom.id);
-      setOwnedRoomId(owned ? publicRoom.id : null);
-      setRoom(publicRoom);
-    } catch (error) {
-      setLoadError(
-        error instanceof Error ? error.message : "Unable to load this partner room.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [roomId, retry]);
 
   const createdLabel = useMemo(() => {
     if (!room) return "";
@@ -110,14 +95,14 @@ export default function PartnerRoomDetailsPage() {
           <section role="alert" className="rounded-2xl border border-[#F6C5C1] bg-[#FDECEC] p-6">
             <h2 className="text-xl font-semibold text-[#B42318]">Unable to load room</h2>
             <p className="mt-2 text-sm text-[#7F1D1D]">{loadError}</p>
-            <Button type="button" variant="secondary" className="mt-4" onClick={() => void retryLoadRoom()}>
+            <Button type="button" variant="secondary" className="mt-4" onClick={() => setRetry((attempt) => attempt + 1)}>
               Try again
             </Button>
             <LinkButton href="/partners" variant="secondary" className="mt-4">
               Return to directory
             </LinkButton>
           </section>
-        ) : !room ? (
+        ) : !room || room.id !== roomId ? (
           <section className="rounded-2xl border border-dashed border-[#CBD2DC] bg-[#FBFCFD] p-10 text-center">
             <h2 className="text-xl font-semibold text-[#1F2937]">Room not found</h2>
             <p className="mt-2 text-sm text-[#5B6472]">This room does not exist or is no longer open for discovery.</p>
@@ -171,10 +156,12 @@ export default function PartnerRoomDetailsPage() {
                 <p className="font-semibold">Available additional places: {availableAdditionalPlaces}</p>
                 <p className="mt-1 text-xs text-[#5B6472]">{room.memberCount} current memberships, including the host.</p>
               </div>
-              {ownedRoomId === room.id ? (
+              {viewer?.roomId === room.id && viewer.owned ? (
                 <span className="rounded-full border border-[#DDE2E9] bg-[#F7F8FA] px-3 py-1 text-xs font-semibold text-[#324053]">
                   Your Room
                 </span>
+              ) : !viewer || viewer.roomId !== room.id ? null : viewer.status ? (
+                <RoomApplicationStatusBadge status={viewer.status} />
               ) : availableAdditionalPlaces > 0 ? (
                 <LinkButton href={`/partners/${room.id}/join`} variant="primary">
                   Request to Join
@@ -195,11 +182,13 @@ export default function PartnerRoomDetailsPage() {
   );
 }
 
-async function checkRoomOwnership(supabase: ReturnType<typeof createClient>, roomId: string) {
+async function loadRoomViewer(supabase: ReturnType<typeof createClient>, roomId: string) {
   try {
-    return await isOwnPartnerRoom(supabase, roomId);
+    const owned = await isOwnPartnerRoom(supabase, roomId);
+    const status = owned ? null : await getOwnRoomApplicationStatus(supabase, roomId);
+    return { roomId, owned, status };
   } catch (error) {
-    if (error instanceof BracEligibilityError) return false;
+    if (error instanceof BracEligibilityError) return null;
     throw error;
   }
 }

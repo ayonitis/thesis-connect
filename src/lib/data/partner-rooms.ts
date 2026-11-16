@@ -251,6 +251,22 @@ export async function isOwnPartnerRoom(
   return data !== null;
 }
 
+/** A failed viewer lookup must never be treated as an absent application. */
+export async function getOwnRoomApplicationStatus(
+  supabase: SupabaseClient,
+  roomId: string,
+): Promise<RoomApplicationStatus | null> {
+  const user = await requireBracUser(supabase);
+  const { data, error } = await supabase
+    .from("room_join_applications")
+    .select("status")
+    .eq("room_id", roomId)
+    .eq("applicant_user_id", user.id)
+    .maybeSingle();
+  if (error) throwSafeDataError(error);
+  return data?.status ?? null;
+}
+
 /** Returns the UUID of the newly-created room_join_applications record. */
 export async function submitRoomApplication(
   supabase: SupabaseClient,

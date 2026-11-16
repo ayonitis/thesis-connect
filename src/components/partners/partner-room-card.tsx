@@ -49,11 +49,17 @@ export function PartnerRoomCard({ room, applicationStatus, hosted, canRequest }:
           <p>Additional Members Remaining: {remaining}</p>
         </div>
         {hosted ? <span>Your Room</span> : applicationStatus ? (
-          <span aria-disabled="true" className={applicationStatus === "accepted" ? "rounded px-2 py-1 bg-green-100 text-green-900" : applicationStatus === "rejected" ? "rounded px-2 py-1 bg-red-100 text-red-900" : "rounded px-2 py-1 bg-amber-100 text-amber-900"}>
-            {applicationStatus === "accepted" ? "Accepted" : applicationStatus === "rejected" ? "Rejected" : applicationStatus === "withdrawn" ? "Withdrawn" : "Pending"}
-          </span>
+          <RoomApplicationStatusBadge status={applicationStatus} />
         ) : canRequest && remaining > 0 ? <LinkButton href={`/partners/${room.id}/join`} variant="lightBlue">Request to Join</LinkButton> : null}
       </div>
     </article>
+  );
+}
+
+export function RoomApplicationStatusBadge({ status }: { status: RoomApplicationStatus }) {
+  return (
+    <span aria-disabled="true" className={status === "accepted" ? "rounded px-2 py-1 bg-green-100 text-green-900" : status === "rejected" ? "rounded px-2 py-1 bg-red-100 text-red-900" : "rounded px-2 py-1 bg-amber-100 text-amber-900"}>
+      {status === "accepted" ? "Accepted" : status === "rejected" ? "Rejected" : status === "withdrawn" ? "Withdrawn" : "Pending"}
+    </span>
   );
 }
