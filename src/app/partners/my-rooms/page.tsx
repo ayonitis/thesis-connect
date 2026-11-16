@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button, LinkButton } from "@/components/ui/button";
 import {
   decideRoomApplication,
+  deletePartnerRoom,
   listOwnRoomApplications,
   listHostedRoomDashboards,
   withdrawRoomApplication,
@@ -22,6 +23,8 @@ export default function MyRoomsPage() {
   const [decisionError, setDecisionError] = useState<string | null>(null);
   const [decisionNotice, setDecisionNotice] = useState<string | null>(null);
   const [decidingApplicationId, setDecidingApplicationId] = useState<string | null>(null);
+  const [deletingRoomId, setDeletingRoomId] = useState<string | null>(null);
+  const [roomActionError, setRoomActionError] = useState<string | null>(null);
   const [applications, setApplications] = useState<OwnRoomApplication[]>([]);
   const [isLoadingApplications, setIsLoadingApplications] = useState(true);
   const [applicationsError, setApplicationsError] = useState<string | null>(null);
@@ -120,7 +123,7 @@ export default function MyRoomsPage() {
     applicationId: string,
     decision: RoomApplicationDecision,
   ) => {
-    if (decidingApplicationId) return;
+    if (decidingApplicationId || deletingRoomId) return;
 
     setDecisionError(null);
     setDecisionNotice(null);
@@ -143,6 +146,25 @@ export default function MyRoomsPage() {
       );
     } finally {
       setDecidingApplicationId(null);
+    }
+  };
+
+  const removeRoom = async (roomId: string) => {
+    if (deletingRoomId || decidingApplicationId || !window.confirm(
+      "Delete this room and remove it from the directory? Its applications and memberships will be permanently deleted. Related records, including application contact details and notifications, may also be permanently deleted. This cannot be undone.",
+    )) return;
+
+    setRoomActionError(null);
+    setDecisionNotice(null);
+    setDeletingRoomId(roomId);
+    try {
+      await deletePartnerRoom(createClient(), roomId);
+      setRooms((current) => current.filter((room) => room.id !== roomId));
+      setDecisionNotice("Room deleted and removed from the directory.");
+    } catch (error) {
+      setRoomActionError(error instanceof Error ? error.message : "Unable to delete the room.");
+    } finally {
+      setDeletingRoomId(null);
     }
   };
 
@@ -179,6 +201,11 @@ export default function MyRoomsPage() {
           description="Review the rooms you host and the Partner Room applications you have submitted."
         />
 
+        {roomActionError ? (
+          <p className="mb-5 rounded-xl border border-[#F2C5C2] bg-[#FFF4F3] p-4 text-sm text-[#B42318]" role="alert">
+            {roomActionError}
+          </p>
+        ) : null}
         {decisionNotice ? (
           <p className="mb-5 rounded-xl border border-[#BFD9C1] bg-[#EFFAF0] p-4 text-sm text-[#204D25]" role="status">
             {decisionNotice}
@@ -227,6 +254,13 @@ export default function MyRoomsPage() {
                     </span>
                   </div>
 
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <LinkButton href={`/partners/my-rooms/${room.id}/edit`} variant="secondary">Edit Room</LinkButton>
+                    <Button variant="ghost" disabled={Boolean(deletingRoomId) || Boolean(decidingApplicationId)} onClick={() => void removeRoom(room.id)}>
+                      {deletingRoomId === room.id ? "Deleting…" : "Delete Room"}
+                    </Button>
+                  </div>
+
                   <div className="mt-4 grid gap-3 text-sm text-[#4B5563] sm:grid-cols-3">
                     <p><span className="font-medium text-[#1F2937]">Members:</span> {room.memberCount}</p>
                     <p><span className="font-medium text-[#1F2937]">Additional members needed:</span> {room.additionalMembersNeeded}</p>
@@ -257,8 +291,8 @@ export default function MyRoomsPage() {
                               </div>
                               <p className="mt-3 text-sm text-[#374151]">{application.whyJoin}</p>
                               <div className="mt-4 flex flex-wrap justify-end gap-2">
-                                <Button variant="secondary" onClick={() => void decideApplication(application.id, "rejected")} disabled={Boolean(decidingApplicationId)}>{isDeciding ? "Saving…" : "Reject"}</Button>
-                                <Button onClick={() => void decideApplication(application.id, "accepted")} disabled={Boolean(decidingApplicationId) || !acceptsMembers}>{isDeciding ? "Saving…" : "Accept"}</Button>
+                                <Button variant="secondary" onClick={() => void decideApplication(application.id, "rejected")} disabled={Boolean(decidingApplicationId) || Boolean(deletingRoomId)}>{isDeciding ? "Saving…" : "Reject"}</Button>
+                                <Button onClick={() => void decideApplication(application.id, "accepted")} disabled={Boolean(decidingApplicationId) || Boolean(deletingRoomId) || !acceptsMembers}>{isDeciding ? "Saving…" : "Accept"}</Button>
                               </div>
                               {!acceptsMembers ? <p className="mt-3 text-xs text-[#8A4B00]">Acceptance is unavailable because this room is closed or has no remaining capacity.</p> : null}
                             </article>

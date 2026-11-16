@@ -57,17 +57,9 @@ export type RoomApplicationStatus =
   | "rejected"
   | "withdrawn";
 
-export type HostedPartnerRoom = {
+export type HostedPartnerRoom = CreatePartnerRoomInput & {
   id: string;
-  title: string;
-  description: string;
   hostDepartment: DepartmentValue;
-  additionalMembersNeeded: number;
-  expectedDepartment: DepartmentValue;
-  expectedCgpaMin: number;
-  expectedCgpaMax: number;
-  minCompletedCredits: number;
-  additionalInfo: string | null;
   isOpen: boolean;
   createdAt: string;
 };
@@ -211,7 +203,21 @@ export async function createPartnerRoom(
   input: CreatePartnerRoomInput,
 ): Promise<string> {
   await requireBracUser(supabase);
-  const { data, error } = await supabase.rpc("create_partner_room", {
+  const { data, error } = await supabase.rpc("create_partner_room", roomWriteArgs(input));
+
+  if (error) {
+    throwSafeDataError(error);
+  }
+
+  if (typeof data !== "string" || !data) {
+    throw new Error("Room creation did not return a room ID.");
+  }
+
+  return data;
+}
+
+function roomWriteArgs(input: CreatePartnerRoomInput) {
+  return {
     p_title: input.title,
     p_description: input.description,
     p_host_completed_credits: input.hostCompletedCredits,
@@ -223,17 +229,35 @@ export async function createPartnerRoom(
     p_expected_cgpa_max: input.expectedCgpaMax,
     p_min_completed_credits: input.minCompletedCredits,
     p_additional_info: input.additionalInfo,
+  };
+}
+
+export async function updatePartnerRoom(
+  supabase: SupabaseClient,
+  roomId: string,
+  input: CreatePartnerRoomInput,
+): Promise<void> {
+  await requireBracUser(supabase);
+  const { error } = await supabase.rpc("update_own_partner_room", {
+    p_room_id: roomId,
+    ...roomWriteArgs(input),
   });
-
-  if (error) {
-    throwSafeDataError(error);
+  if (error?.code === "P0001" && error.message === "room capacity cannot be below accepted membership count") {
+    throw new Error("Additional members needed cannot be fewer than the number of already accepted participants.");
   }
+  if (error) throwSafeDataError(error);
+}
 
-  if (typeof data !== "string" || !data) {
-    throw new Error("Room creation did not return a room ID.");
+export async function deletePartnerRoom(
+  supabase: SupabaseClient,
+  roomId: string,
+): Promise<void> {
+  await requireBracUser(supabase);
+  const { error } = await supabase.rpc("delete_own_partner_room", { p_room_id: roomId });
+  if (error?.code === "P0001" && error.message === "room deletion blocked by retained records") {
+    throw new Error("This room cannot be deleted while related records must be retained.");
   }
-
-  return data;
+  if (error) throwSafeDataError(error);
 }
 
 export async function isOwnPartnerRoom(
@@ -364,7 +388,7 @@ export async function listOwnRoomApplications(
 }
 
 const HOSTED_ROOM_COLUMNS =
-  "id, title, description, host_department, additional_members_needed, expected_department, expected_cgpa_min, expected_cgpa_max, min_completed_credits, additional_info, is_open, created_at";
+  "id, title, description, host_department, host_completed_credits, host_cgpa, show_host_cgpa, additional_members_needed, expected_department, expected_cgpa_min, expected_cgpa_max, min_completed_credits, additional_info, is_open, created_at";
 const HOSTED_APPLICATION_COLUMNS =
   "id, room_id, applicant_display_name, department, cgpa, completed_credits, why_join, status, created_at";
 const ACCEPTED_MEMBERSHIP_COLUMNS =
@@ -375,6 +399,9 @@ type HostedPartnerRoomRow = {
   title: string;
   description: string;
   host_department: DepartmentValue;
+  host_completed_credits: number;
+  host_cgpa: number | null;
+  show_host_cgpa: boolean;
   additional_members_needed: number;
   expected_department: DepartmentValue;
   expected_cgpa_min: number;
@@ -407,10 +434,11 @@ type AcceptedRoomMembershipRow = {
 export async function listHostedPartnerRooms(
   supabase: SupabaseClient,
 ): Promise<HostedPartnerRoom[]> {
-  await requireBracUser(supabase);
+  const user = await requireBracUser(supabase);
   const { data, error } = await supabase
     .from("partner_rooms")
     .select(HOSTED_ROOM_COLUMNS)
+    .eq("host_user_id", user.id)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -418,6 +446,21 @@ export async function listHostedPartnerRooms(
   }
 
   return (data ?? []).map((row) => toHostedPartnerRoom(row as HostedPartnerRoomRow));
+}
+
+export async function getHostedPartnerRoom(
+  supabase: SupabaseClient,
+  roomId: string,
+): Promise<HostedPartnerRoom | null> {
+  const user = await requireBracUser(supabase);
+  const { data, error } = await supabase
+    .from("partner_rooms")
+    .select(HOSTED_ROOM_COLUMNS)
+    .eq("id", roomId)
+    .eq("host_user_id", user.id)
+    .maybeSingle();
+  if (error) throwSafeDataError(error);
+  return data ? toHostedPartnerRoom(data as HostedPartnerRoomRow) : null;
 }
 
 export async function listHostedRoomApplications(
@@ -549,6 +592,9 @@ function toHostedPartnerRoom(row: HostedPartnerRoomRow): HostedPartnerRoom {
     title: row.title,
     description: row.description,
     hostDepartment: row.host_department,
+    hostCompletedCredits: row.host_completed_credits,
+    hostCgpa: row.host_cgpa,
+    showHostCgpa: row.show_host_cgpa,
     additionalMembersNeeded: row.additional_members_needed,
     expectedDepartment: row.expected_department,
     expectedCgpaMin: row.expected_cgpa_min,

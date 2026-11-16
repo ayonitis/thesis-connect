@@ -90,7 +90,7 @@ function RoomNotifications() {
   );
 }
 
-export function AuthNavigation() {
+export function AuthNavigation({ showAccountLink = false }: { showAccountLink?: boolean }) {
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
   const signedIn = Boolean(userId);
   useEffect(() => {
@@ -113,9 +113,20 @@ export function AuthNavigation() {
     return () => { active = false; };
   }, []);
 
-  if (userId === undefined) return <span className="px-4 py-2 text-sm text-white/80" role="status">Loading account…</span>;
-  // Navigation is presentation only; profile routes retain server Auth/BRAC guards.
-  return <div className="flex items-center gap-2">{userId && <RoomNotifications key={userId} />}<LinkButton href={signedIn ? "/profile" : "/sign-in"} variant={signedIn ? "profile" : "auth"}>
-    {signedIn ? "Profile" : "Sign In"}
-  </LinkButton></div>;
+  if (userId === undefined) {
+    return showAccountLink ? <span className="px-4 py-2 text-sm text-white/80" role="status">Loading account…</span> : null;
+  }
+  if (!userId && !showAccountLink) return null;
+
+  // Profile routes retain server Auth/BRAC guards.
+  return (
+    <div className="flex items-center gap-2">
+      {userId && <RoomNotifications key={userId} />}
+      {showAccountLink && (
+        <LinkButton href={signedIn ? "/profile" : "/sign-in"} variant={signedIn ? "profile" : "auth"}>
+          {signedIn ? "Profile" : "Sign In"}
+        </LinkButton>
+      )}
+    </div>
+  );
 }
