@@ -61,7 +61,7 @@ export default function HomePage() {
                 THESIS CONNECT
               </p>
             </div>
-            <AuthNavigation />
+            <AuthNavigation showAccountLink />
           </div>
 
           <div className="mt-12 max-w-3xl">
